@@ -4,4 +4,26 @@
  *
  */
 
+$background: #42B4E6;
 $text-color-primary: rgba(0, 0, 0, .89);
+$cursor-timing: .5s;
+
+/*----------  field  ----------*/
+
+$cell-size: 73px;
+$border-size: 20px;
+$border-color: white;
+$border-radius: 100%;
+$winner-size: 14px;
+
+/*----------  nil  ----------*/
+
+$nil-size: 20px;
+$nil-border-size: 12px;
+
+
+/*----------  cross  ----------*/
+
+$cross-size: 44px;
+$cross-height: 12px;
+$color: white;

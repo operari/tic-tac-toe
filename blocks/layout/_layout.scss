@@ -6,8 +6,17 @@
 
 body {
 	display: flex;
+	background-color: $background;
+	cursor: url('../blocks/game/game_cursor_default.svg'), auto;
 }
 
 .container {
+	position: relative;
 	margin: auto;
+	cursor: url('../blocks/game/game_cursor.svg') 0 45, auto;
+}
+
+.is-hidden {
+	visibility: hidden;
+	opacity: 0;
 }

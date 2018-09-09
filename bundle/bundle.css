@@ -33,6 +33,9 @@
  * variables
  *
  */
+/*----------  field  ----------*/
+/*----------  nil  ----------*/
+/*----------  cross  ----------*/
 /*
  * What follows is the result of much research on cross-browser styling.
  * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
@@ -328,10 +331,19 @@ main {
  */
 body {
   display: flex;
+  background-color: #42B4E6;
+  cursor: url("../blocks/game/game_cursor_default.svg"), auto;
 }
 
 .container {
+  position: relative;
   margin: auto;
+  cursor: url("../blocks/game/game_cursor.svg") 0 45, auto;
+}
+
+.is-hidden {
+  visibility: hidden;
+  opacity: 0;
 }
 
 /**
@@ -360,49 +372,172 @@ body {
   border-bottom-color: transparent;
 }
 
+.tttoe__tick {
+  display: flex;
+  margin: auto;
+}
+
+.tttoe__tick--nil {
+  width: 20px;
+  height: 20px;
+  border: 12px solid white;
+  border-radius: 100%;
+  background-color: transparent;
+}
+
+.tttoe__tick--cross {
+  position: relative;
+  width: 44px;
+}
+
+.tttoe__tick--cross::before, .tttoe__tick--cross::after {
+  position: absolute;
+  width: 44px;
+  height: 12px;
+  content: '';
+  background-color: white;
+}
+
+.tttoe__tick--cross::before {
+  transform: rotate(-45deg);
+}
+
+.tttoe__tick--cross::after {
+  transform: rotate(45deg);
+}
+
 .tttoe__cell {
   font-family: 'Roboto';
   font-weight: 300;
   font-size: 2.3rem;
-  width: 50px;
-  height: 50px;
+  position: relative;
+  width: 73px;
+  height: 73px;
+  padding: 0;
   text-align: center;
-  border: 2px solid black;
+  border: 20px solid white;
+  border-radius: 100%;
 }
 
-.tttoe__cell--winner-x, .tttoe__cell--winner-y, .tttoe__cell--winner-z, .tttoe__cell--winner-z-45 {
+.tttoe__cell::before, .tttoe__cell::after {
+  position: absolute;
+  top: -10px;
+  right: -20px;
+  width: 20px;
+  content: '';
+  visibility: hidden;
+}
+
+.tttoe__cell::before {
+  height: 36.5px;
+  background-color: #42B4E6;
+}
+
+.tttoe__cell::after {
+  height: 68px;
+  border-radius: 100px;
+  background-color: white;
+}
+
+tr:first-child .tttoe__cell::before, tr:first-child .tttoe__cell::after {
+  visibility: visible;
+}
+
+tr:not(:last-child) .tttoe__cell:last-child::before, tr:not(:last-child) .tttoe__cell:last-child::after {
+  height: 20px;
+  top: auto;
+  right: -10px;
+  bottom: -20px;
+  visibility: visible;
+}
+
+tr:not(:last-child) .tttoe__cell:last-child::before {
+  width: 36.5px;
+}
+
+tr:not(:last-child) .tttoe__cell:last-child::after {
+  width: 68px;
+}
+
+tr:not(:first-child) .tttoe__cell:first-child::before, tr:not(:first-child) .tttoe__cell:first-child::after {
+  height: 20px;
+  top: -20px;
+  left: -10px;
+  visibility: visible;
+}
+
+tr:not(:first-child) .tttoe__cell:first-child::before {
+  width: 36.5px;
+}
+
+tr:not(:first-child) .tttoe__cell:first-child::after {
+  width: 68px;
+}
+
+tr:last-child .tttoe__cell:not(:first-child)::before, tr:last-child .tttoe__cell:not(:first-child)::after {
+  top: auto;
+  bottom: -10px;
+  left: -20px;
+  right: auto;
+  visibility: visible;
+}
+
+.tttoe__inner {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.tttoe__cell--winner-x .tttoe__inner,
+.tttoe__cell--winner-y .tttoe__inner,
+.tttoe__cell--winner-z .tttoe__inner,
+.tttoe__cell--winner-z-45 .tttoe__inner {
   position: relative;
 }
 
-.tttoe__cell--winner-x::before, .tttoe__cell--winner-y::before, .tttoe__cell--winner-z::before, .tttoe__cell--winner-z-45::before {
+.tttoe__cell--winner-x .tttoe__inner::before,
+.tttoe__cell--winner-y .tttoe__inner::before,
+.tttoe__cell--winner-z .tttoe__inner::before,
+.tttoe__cell--winner-z-45 .tttoe__inner::before {
   position: absolute;
-  top: calc(50% - 1px);
+  top: calc(50% - 14px / 2);
   left: 0;
   width: 100%;
-  height: 2px;
+  height: 14px;
   content: '';
-  background-color: black;
+  background-color: white;
 }
 
-.tttoe__cell--winner-y::before {
+.tttoe__cell--winner-y .tttoe__inner::before {
   transform: rotate(90deg);
 }
 
-.tttoe__cell--winner-z::before {
-  top: 0;
+.tttoe__cell--winner-z .tttoe__inner::before {
+  top: -7px;
   left: 0;
-  width: 140%;
+  width: 141%;
   transform: rotate(45deg);
   transform-origin: left;
 }
 
-.tttoe__cell--winner-z-45::before {
-  top: 0;
+.tttoe__cell--winner-z-45 .tttoe__inner::before {
+  top: -7px;
   left: auto;
-  right: 1px;
-  width: 140%;
+  right: 0;
+  width: 141%;
   transform: rotate(-45deg);
   transform-origin: right;
+}
+
+.tttoe__computer-cursor {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 45px;
+  height: 45px;
+  transition: all 0.5s linear;
+  background: url("../blocks/game/game_cursor_alt.svg") no-repeat;
 }
 
 /*# sourceMappingURL=maps/bundle.css.map */

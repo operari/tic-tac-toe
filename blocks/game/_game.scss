@@ -1,0 +1,193 @@
+/**
+ *
+ * tic-tac-toe
+ *
+ */
+
+.tttoe {
+	border-collapse: collapse;
+	border-spacing: 0;
+	tr {
+		td:first-child {
+			border-left-color: transparent;
+		}
+		td:last-child {
+			border-right-color: transparent;
+		}
+	}
+	tr:first-child {
+		td {
+			border-top-color: transparent;
+		}
+
+	}
+	tr:last-child {
+		td {
+			border-bottom-color: transparent;
+		}
+	}
+	&__tick {
+		display: flex;
+		margin: auto;
+	}
+	&__tick--nil {
+		width: $nil-size;
+		height: $nil-size;
+		border: $nil-border-size solid $border-color;
+		border-radius: 100%;
+		background-color: transparent;
+	}
+	&__tick--cross {
+		position: relative;
+		width: $cross-size;
+		&::before,
+		&::after {
+			position: absolute;
+			width: $cross-size;
+			height: $cross-height;
+			content: '';
+			background-color: $color;
+		}
+		&::before {
+			transform: rotate(-45deg);
+		}
+		&::after {
+			transform: rotate(45deg);
+		}
+	}
+	&__cell {
+		font-family: 'Roboto';
+		font-weight: 300;
+		font-size: 2.3rem;
+		position: relative;
+		width: $cell-size;
+		height: $cell-size;
+		padding: 0;
+		text-align: center;
+		border: $border-size solid $border-color;
+		border-radius: $border-radius;
+		&::before,
+		&::after {
+			position: absolute;
+			top: - $border-size / 2;
+			right: - $border-size;
+			width:  $border-size;
+			content: '';
+			visibility: hidden;
+		}
+		&::before {
+			height: $cell-size / 2;
+			background-color: $background;
+		}
+		&::after {
+			height: $cell-size - 5px;
+			border-radius: 100px;
+			background-color: $border-color;
+		}
+		tr:first-child & {
+			&::before,
+			&::after {
+				visibility: visible;
+			}
+		}
+		tr:not(:last-child) &:last-child {
+			&::before,
+			&::after {
+				height: $border-size;
+				top: auto;
+				right: - $border-size / 2;
+				bottom: - $border-size;
+				visibility: visible;
+			}
+			&::before {
+				width: $cell-size / 2;
+			}
+			&::after {
+				width: $cell-size - 5px;
+			}
+		}
+		tr:not(:first-child) &:first-child {
+			&::before,
+			&::after {
+				height: $border-size;
+				top: - $border-size;
+				left: - $border-size / 2;
+				visibility: visible;
+			}
+			&::before {
+				width: $cell-size / 2;
+			}
+			&::after {
+				width: $cell-size - 5px;
+			}
+		}
+		tr:last-child &:not(:first-child) {
+			&::before,
+			&::after {
+				top: auto;
+				bottom: - $border-size / 2;
+				left: - $border-size;
+				right: auto;
+				visibility: visible;
+			}
+		}
+	}
+	&__inner {
+		display: flex;
+		width: 100%;
+		height: 100%;
+		.tttoe__cell--winner-x &,
+		.tttoe__cell--winner-y &,
+		.tttoe__cell--winner-z &,
+		.tttoe__cell--winner-z-45 & {
+			position: relative;
+			&::before {
+				position: absolute;
+				top: calc(50% - #{$winner-size} / 2);
+				left: 0;
+				width: 100%;
+				height: $winner-size;
+				content: '';
+				background-color: $border-color;
+			}
+		}
+		.tttoe__cell--winner-x & {
+			&::before {}
+		}
+		.tttoe__cell--winner-y & {
+			&::before {
+				transform: rotate(90deg);
+			}
+		}
+		.tttoe__cell--winner-z & {
+			&::before {
+				top: -7px;
+				left: 0;
+				width: 	141%;
+				transform: rotate(45deg);
+				transform-origin: left;
+			}
+		}
+		.tttoe__cell--winner-z-45 & {
+			&::before {
+				top: -7px;
+				left: auto;
+				right: 0;
+				width: 141%;
+				transform: rotate(-45deg);
+				transform-origin: right;
+			}
+		}
+	}
+	&__computer-cursor {
+		position: absolute;
+		z-index: 1;
+		top: 0;
+		left: 0;
+		width: 45px;
+		height: 45px;
+		transition: all $cursor-timing linear;
+		background: url('../blocks/game/game_cursor_alt.svg') no-repeat;
+	}
+
+}

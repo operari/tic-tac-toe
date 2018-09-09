@@ -13,7 +13,7 @@ var BLOCKS = {
 };
 
 var SOURCES = [
-  `${BLOCKS.common}/app/app.js`
+  `${BLOCKS.common}/game/game.js`
 ];
 
 var WATCH = {
@@ -46,7 +46,8 @@ gulp.task('js', function() {
 	.pipe($.plumber({errorHandler: $.notify.onError("Error: <%= error.message %>")}))
 	.pipe($.sourcemaps.init())
 	.pipe($.babel({
-		presets: ['env']
+		presets: ['env'],
+		plugins: [["babel-plugin-transform-builtin-extend", {"globals": ["Error", "Array"]}]]
 	}))
 	// Concatenate Scripts
 	.pipe($.concat('bundle.js'))
