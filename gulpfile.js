@@ -16,6 +16,7 @@ var SOURCES = [
   `${BLOCKS.common}/sound/sound.js`,
   `${BLOCKS.common}/dice/dice.js`,
   `${BLOCKS.common}/confetti/confetti.js`,
+  `${BLOCKS.common}/toggleScreen/toggleScreen.js`,
   `${BLOCKS.common}/screen/screen.js`,
   `${BLOCKS.common}/game/game.js`
 ];

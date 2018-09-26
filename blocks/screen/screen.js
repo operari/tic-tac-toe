@@ -34,7 +34,8 @@ class Screen {
 		};
 		this.__proto__.Constant_ = {
 			ANIM_TIMING: 1000,
-			DICE_HIDE_TIMING: 3000
+			DICE_HIDE_TIMING: 3000,
+			FULLSCREEN_TIMING: 1000
 		};
 	}
 
@@ -211,6 +212,12 @@ class Screen {
 					el.addEventListener( 'click', (e) => {
 						const target = e.target;
 						if (target.tagName !== "BUTTON") return;
+						if (target.id && target.id === this.CssIds_.START) {
+							const fullscreen = new ToggleScreen();
+							setTimeout( function() {
+								fullscreen.open();
+							}, this.Constant_.FULLSCREEN_TIMING );
+						}
 						this.sound.play( 'click' );
 						this.switchLastScreen( target, arr );
 						this.makeOptions( target, ['side', 'run', 'mode', 'players'] );

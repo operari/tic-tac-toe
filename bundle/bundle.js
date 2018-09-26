@@ -240,6 +240,49 @@ var Confetti = function () {
 
 	return Confetti;
 }();
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ToggleScreen = function () {
+	function ToggleScreen(elem) {
+		_classCallCheck(this, ToggleScreen);
+
+		this.elem = elem || document.documentElement;
+	}
+
+	_createClass(ToggleScreen, [{
+		key: "open",
+		value: function open() {
+			if (this.elem.requestFullscreen) {
+				this.elem.requestFullscreen();
+			} else if (this.elem.mozRequestFullScreen) {
+				this.elem.mozRequestFullScreen();
+			} else if (this.elem.webkitRequestFullscreen) {
+				this.elem.webkitRequestFullscreen();
+			} else if (this.elem.msRequestFullscreen) {
+				this.elem.msRequestFullscreen();
+			}
+		}
+	}, {
+		key: "close",
+		value: function close() {
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if (document.mozCancelFullScreen) {
+				document.mozCancelFullScreen();
+			} else if (document.webkitExitFullscreen) {
+				document.webkitExitFullscreen();
+			} else if (document.msExitFullscreen) {
+				document.msExitFullscreen();
+			}
+		}
+	}]);
+
+	return ToggleScreen;
+}();
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -283,7 +326,8 @@ var Screen = function () {
 		};
 		this.__proto__.Constant_ = {
 			ANIM_TIMING: 1000,
-			DICE_HIDE_TIMING: 3000
+			DICE_HIDE_TIMING: 3000,
+			FULLSCREEN_TIMING: 1000
 		};
 	}
 
@@ -444,6 +488,12 @@ var Screen = function () {
 						el.addEventListener('click', function (e) {
 							var target = e.target;
 							if (target.tagName !== "BUTTON") return;
+							if (target.id && target.id === _this3.CssIds_.START) {
+								var fullscreen = new ToggleScreen();
+								setTimeout(function () {
+									fullscreen.open();
+								}, _this3.Constant_.FULLSCREEN_TIMING);
+							}
 							_this3.sound.play('click');
 							_this3.switchLastScreen(target, arr);
 							_this3.makeOptions(target, ['side', 'run', 'mode', 'players']);
