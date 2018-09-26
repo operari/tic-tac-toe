@@ -1,0 +1,154 @@
+/**
+ *
+ * Screen
+ *
+ */
+
+.screen {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	background: url('../blocks/screen/screen.png') repeat;
+	&.is-hidden {
+		display: none;
+	}
+	&::before,
+	&::after {
+		@if $children {
+			position: absolute;
+			content: '';
+			opacity: .9;
+		}
+	}
+	&::before {
+		@if $children {
+			left: 4px;
+			bottom: -32px;
+			width: 130px;
+			height: 179px;
+			transform: rotate(55deg);
+			background: url('../blocks/screen/child1.png') no-repeat;
+		}
+	}
+	&::after {
+		@if $children {
+			right: 4px;
+			bottom: 93px;
+			width: 127px;
+			height: 220px;
+			transform: rotate(-58deg);
+			background: url('../blocks/screen/child3.png') no-repeat;
+		}
+	}
+
+	&__inner {
+		display: flex;
+		flex-flow: column nowrap;
+		align-self: center
+	}
+	&__main {
+		display: flex;
+		flex-flow: column nowrap;
+		justify-content: center;
+		visibility: visible;
+	}
+	&__title {
+		font-size: 4rem;
+		width: 100%;
+		margin-bottom: 0;
+		letter-spacing: -2px;
+		text-align: center;
+		text-transform: uppercase;
+		text-shadow: 2px 2px 0 white;
+		color: $screen;
+	}
+	&__display {
+		text-shadow: 2px 2px 0 white;
+	}
+	&__phrase {
+		font-size: 1.7rem;
+		margin-bottom: 100px;
+		text-align: center;
+		text-transform: capitalize;
+		text-shadow: 2px 2px 0 white;
+		color: $phrase;
+	}
+	&__robot {
+		position: relative;
+		&::before {
+			@if $children {
+				position: absolute;
+				left: calc(50% - 100px);
+				bottom: 49px;
+				width: 200px;
+				height: 170px;
+				content: '';
+				opacity: .9;
+				background: url('../blocks/screen/robot.png') no-repeat;
+			}
+		}
+	}
+	&__start {
+		position: relative;
+		width: auto;
+		margin: auto;
+		@if $children {
+			margin-top: 90px;
+		}
+		&.is-hidden {
+			display: none;
+		}
+	}
+	&__mode {
+		&.is-hidden {
+			display: none;
+		}
+	}
+	&__mode-training {
+		background-color: #ea5b71;
+	}
+	&__mode-computer {
+		background-color: #1d7399;
+	}
+	&__mode-human {
+		background-color: #b3ad21;
+	}
+	&__mode-network {
+		background-color: #585F80;
+	}
+	&__side {
+		&.is-hidden {
+			display: none;
+		}
+	}
+	&__side > div {
+		display: flex;
+		flex-flow: row nowrap;
+	}
+	&__pick-move {
+		&.is-hidden {
+			display: none;
+		}
+	}
+	&__dice {
+		position: absolute;
+		z-index: 1;
+		top: 0;
+		left: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		box-sizing: border-box;
+		width: 100%;
+		height: 100%;
+		padding: 0 30%;
+		background-color: #404040;
+		&.is-hidden {
+			display: none;
+		}
+	}
+	&__dice--button {
+		display: none;
+	}
+}

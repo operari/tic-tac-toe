@@ -1,11 +1,24 @@
 class Game {
-	constructor() {
+	constructor(options) {
 		this.fieldSize = 9;
-		this.run = 'human';
+		this.run = 'computer';
+		this.mode = 'training';
+		this.parti = 3;
+		this.store = {};
+		this.players = {
+			player1: 'human',
+			player2: 'computer'
+		};
+		this.names = {
+			human: ['Вы', 'Игрок 1'],
+			computer: 'Компьютер',
+			human1: 'Игрок 2'
+		};
 		this.tickType = {
 			human: 'cross',
-			computer: 'nil'
-		},
+			computer: 'nil',
+			human1: 'nil'
+		};
 		this.numberingAxes = {};
 		this.multiplyingAxes = {};
 		this.additionAxes = {};
@@ -13,15 +26,31 @@ class Game {
 		this.count = 0;
 		this.state = '';
 		this.__proto__.CssClasses_ = {
-			field: 'tttoe',
-			cell: 'tttoe__cell',
-			win: 'tttoe__cell--winner',
-			hidden: 'is-hidden'
-		},
+			FIELD: 'tttoe',
+			CELL: 'tttoe__cell',
+			TICK: 'tttoe__tick',
+			STORE: 'tttoe__store',
+			WIN: 'tttoe__cell--winner',
+			HIDDEN: 'is-hidden',
+			FADEIN_DEF: 'fadeInDef',
+			MSG: 'message',
+			AVATAR: 'tttoe__avatar',
+			SHAKE: 'shake'
+		};
 		this.__proto__.CssIds_ = {
-			app: 'game',
-			cursor: 'comp_cursor'
-		}
+			APP: 'game',
+			CURSOR: 'comp_cursor',
+			CONTAINER: 'container',
+			MSG: 'message'
+		};
+		this.__proto__.Constant_ = {
+			RESTART_TIMING: 2000,
+			CONFETTI_TIMING: 5000,
+			TICK_TIMING: 500,
+			MSG_ANIM_TIMING: 1500
+		};
+		Object.assign( this, options );
+		this.partiRun = this.run;
 	}
 
 	countAxesValues() {
@@ -142,7 +171,7 @@ class Game {
 		this.fieldCells.length = this.fieldSize;
 	}
 
-	makeView() {
+	makeViewField() {
 		const field = document.createElement( 'table' );
 		const sqrt = Math.sqrt( this.fieldSize );
 
@@ -151,11 +180,11 @@ class Game {
 
 			for (let n = 0; n < sqrt; n++) {
 				let cell = document.createElement( 'td' );
-				cell.className = this.CssClasses_.cell;
+				cell.className = this.CssClasses_.CELL;
 				cell.id = sqrt * i + n;
 
 				let inner = document.createElement('div');
-				inner.className = this.CssClasses_.field + '__inner';
+				inner.className = this.CssClasses_.FIELD + '__inner';
 
 				cell.appendChild( inner );
 				row.appendChild( cell );
@@ -165,32 +194,122 @@ class Game {
 			field.appendChild( row );
 		}
 
-		field.className = this.CssClasses_.field;
+		field.className = this.CssClasses_.FIELD;
 
-		const compCursor = document.createElement('div');
-		compCursor.id = 'comp_cursor';
-		compCursor.className = 'tttoe__computer-cursor is-hidden';
+		return field;
+	}
+
+	get playerFirstName() {
+		return this.names[this.players.player1][this.players.player2 === 'computer' ? 0 : 1];
+	}
+
+	get playerSecondName() {
+		return this.names[this.players.player2];
+	}
+
+	makeView() {
+		const html = `
+			<div id="status" class="tttoe__status">
+				<div id="player1" class="tttoe__player">
+					<div class="tttoe__avatar">
+						<img src="blocks/game/${this.players.player1}.png" alt="" />
+					</div>
+					<div class="tttoe__name">${this.playerFirstName}</div>
+					<div class="tttoe__store">0</div>
+				</div>
+				<div id="player2" class="tttoe__player">
+					<div class="tttoe__avatar">
+						<img src="blocks/game/${this.players.player2}.png" alt="" />
+					</div>
+					<div class="tttoe__name">${this.playerSecondName}</div>
+					<div class="tttoe__store">0</div>
+				</div>
+			</div>
+			<div id="comp_cursor" class="tttoe__computer-cursor is-hidden"></div>
+			<div id="message" class="tttoe__message animated animated--msg"></div>`;
+
+		const field = this.makeViewField();
 
 		return new Promise( (resolve,reject) => {
-			document.addEventListener( 'DOMContentLoaded', (e) => {
-				this.fieldElement = document.getElementById( this.CssIds_.app );
-				this.fieldElement.appendChild( compCursor );
+			var loadDom = (e) => {
+				this.fieldElement = document.getElementById( this.CssIds_.APP );
+				this.fieldElement.innerHTML += html;
 				this.fieldElement.appendChild( field );
+				this.showView();
 				resolve();
-			} );
-		} );
+			}
 
+			if (document.readyState === 'complete') {
+				loadDom();
+			} else {
+				document.addEventListener( 'DOMContentLoaded', loadDom );
+			}
+
+		} );
+	}
+
+	showView() {
+		const container = document.getElementById( this.CssIds_.CONTAINER );
+		container.classList.toggle( this.CssClasses_.HIDDEN );
+		container.classList.toggle( this.CssClasses_.FADEIN_DEF );
 	}
 
 	makeMove() {
-		if (this.run === 'human') {
-			this.doHuman();
-		} else {
-			this.doComputer();
+		switch(this.mode) {
+			case 'vs_human':
+				if (this.run === 'human') {
+					this.doHuman( this.players.player1, this.players.player2 );
+				} else {
+					this.doHuman( this.players.player2, this.players.player1 );
+				}
+				break;
+			case 'training':
+
+			default:
+				if (this.run === 'human') {
+					this.doHuman( this.players.player1, this.players.player2 );
+				} else {
+					this.doComputer();
+				}
+		}
+
+	}
+
+	highlightMove() {
+		const props = Object.keys( this.players );
+		const values = Object.values( this.players );
+
+		var highlight = (id, add = true) => {
+			const elem = document.getElementById( id ).querySelector( '.' + this.CssClasses_.AVATAR );
+			elem.classList[add ? 'add' : 'remove']( this.CssClasses_.AVATAR + '--highlight' );
+		};
+
+		let i = values.findIndex( v => v === this.run );
+		highlight( props[i] );
+
+		i = values.findIndex( v => v !== this.run );
+		highlight( props[i], false );
+
+	}
+
+	actionsAfterWin(comb,axis) {
+		this.setStore();
+		this.displayWinner( comb, axis );
+		this.switchPartiPlayer();
+		const winnerName = this.getPartiWinner();
+		this.displayMessage( winnerName );
+		if (winnerName) {
+			const loserName = this.getPartiLoser( winnerName );
+			const winnerId = this.getPlayerId( winnerName );
+			const loserId = this.getPlayerId( loserName );
+			this.throwConfetti( document.getElementById( winnerId ), this.Constant_.CONFETTI_TIMING );
+			this.animate( document.getElementById( loserId ).querySelector( '.' + this.CssClasses_.AVATAR ), this.CssClasses_.SHAKE, this.Constant_.RESTART_TIMING );
 		}
 	}
 
-	doHuman() {
+	doHuman(curr,next) {
+		this.highlightMove();
+
 		const h = handler.bind( this );
 
 		function handler(e) {
@@ -198,17 +317,26 @@ class Game {
 
 			if (target.tagName === 'DIV') {
 				const indx = target.closest('td').id;
-
-				const ticked = this.tick( indx, this.tickType['human'] );
+				const ticked = this.tick( indx, this.tickType[curr] );
 				if (ticked) {
 					this.fieldElement.removeEventListener( 'click', h );
 
-					const winnerComb = this.checkWinnerCombination( false, 'human' );
+					const winnerComb = this.checkWinnerCombination( false, curr );
 					if (winnerComb) {
-						this.displayWinner( winnerComb.comb, winnerComb.axis );
+						this.actionsAfterWin( winnerComb.comb, winnerComb.axis );
+						this.restartMove()
+							.then(
+								result => {
+									this.makeMove();
+								}
+							);
 					} else {
-						// this.draw();
-						this.run = 'computer';
+						if (this.players.player2 !== 'computer') {
+							if (this.draw()) {
+								return;
+							}
+						}
+						this.run = next;
 						this.makeMove();
 					}
 				}
@@ -216,12 +344,14 @@ class Game {
 
 		}
 
-		if (this.run === 'human') {
+		if (this.run !== 'computer') {
 			this.fieldElement.addEventListener( 'click', h );
 		}
 	}
 
 	doComputer() {
+		this.highlightMove();
+
 		const result = this.analysis();
 		const n = result.cell - 1;
 
@@ -229,11 +359,16 @@ class Game {
 			.then(
 				res => {
 					const ticked = this.tick( n, this.tickType[this.run] );
-					this.state = this.count === this.fieldSize ? 'draw' : this.state;
-
+					this.state = this.count === this.fieldSize && this.state !== 'win' ? 'draw' : this.state;
 					if (this.state === 'win') {
 						if (ticked) {
-							this.displayWinner( result.comb, result.axis );
+							this.actionsAfterWin( result.comb, result.axis );
+							this.restartMove()
+								.then(
+									result => {
+										this.makeMove();
+									}
+								);
 						}
 					} else if (this.state === 'draw') {
 						this.count = this.fieldSize;
@@ -243,7 +378,7 @@ class Game {
 							setTimeout( () => {
 								this.run = 'human';
 								this.makeMove();
-							}, 500 );
+							}, this.Constant_.TICK_TIMING );
 						}
 					}
 				}
@@ -255,6 +390,7 @@ class Game {
 			this.fieldCells[n].ticked = true;
 			this.fieldCells[n].tickType = type;
 			this.displayTick( n, type );
+			this.sound.play( 'tick' );
 
 			this.count++;
 
@@ -269,13 +405,13 @@ class Game {
 
 		if (axis) {
 			const matrix = this.numberingAxes[axis];
-			return findCombRow( matrix );
+			return findCombRow.call( this, matrix );
 		} else {
 			const axiss = [];
 			const finded = [];
 			for (let prop in this.numberingAxes) {
 				const matrix = this.numberingAxes[prop];
-				finded.push( findCombRow( matrix ) );
+				finded.push( findCombRow.call( this, matrix ) );
 				axiss.push( prop );
 			}
 			const findedIndex = finded.findIndex( a => a.length );
@@ -477,8 +613,104 @@ class Game {
 		return cell;
 	}
 
+	setStore() {
+		typeof( this.store[this.run] ) === 'number' ? this.store[this.run] += 1 : this.store[this.run] = 1;
+		this.displayStore();
+	}
+
+	getPartiWinner() {
+		const stores = Object.values( this.store );
+		const sum = stores.reduce( (a,b) => a + b );
+
+		if (sum === this.parti) {
+			this.sound.play( 'win' );
+			const n = Math.max.apply( null, stores );
+			let i = stores.findIndex( v => v === n );
+			const winner = Object.keys( this.store )[i];
+			const prop = this.getPlayerId( winner );
+
+			setTimeout( () => {
+				this.resetStores();
+			}, this.Constant_.RESTART_TIMING );
+
+			return winner;
+		} else {
+			this.sound.play( 'point' );
+		}
+
+		return false;
+	}
+
+	getPartiLoser(winner) {
+		const players = Object.values( this.players );
+		const i = players.findIndex( v => v !== winner );
+		return players[i];
+	}
+
+	getPlayerId(name) {
+		for (let prop in this.players) {
+			if (this.players[prop] === name) {
+				return prop;
+			}
+		}
+		return false;
+	}
+
+	switchPartiPlayer() {
+		const playersNames = Object.values( this.players );
+		this.run = this.partiRun = playersNames.find( v => v !== this.partiRun );
+	}
+
+	animate(el,cls,timing,del=true) {
+		if (el) {
+			el.classList.add( cls );
+			return new Promise( (resolve,reject) => {
+				setTimeout( () => {
+					del && el.classList.remove( cls );
+					resolve();
+				}, timing );
+			} );
+		}
+		return false;
+	}
+
+	throwConfetti(el,timing) {
+		if (el) {
+			const confetti = new Confetti( 'confetti', 150 );
+			el.appendChild( confetti );
+			return new Promise( (resolve,reject) => {
+				setTimeout( () => {
+					confetti.remove();
+					resolve();
+				}, timing );
+			} );
+		}
+		return false;
+
+	}
+
 	getRandomInt(min,max) {
 		return Math.floor( Math.random() * (max - min) ) + min;
+	}
+
+	resetStores() {
+		this.store = {};
+		const stores = document.querySelectorAll( '.' + this.CssClasses_.STORE  );
+
+		for (let i = 0; i < stores.length; i++) {
+			stores[i].textContent = 0;
+		}
+
+	}
+
+	displayStore() {
+		for (let prop in this.players) {
+			if (this.run === this.players[prop]) {
+				document.getElementById( prop ).querySelector( '.' + this.CssClasses_.STORE ).textContent = this.store[this.run];
+
+				break;
+			}
+		}
 	}
 
 	displayTick(n,type) {
@@ -489,21 +721,78 @@ class Game {
 
 	displayWinner(arr,axis) {
 		for (let i = 0; i < arr.length; i++) {
-			this.fieldElement.querySelectorAll( 'td' )[arr[i] - 1].classList.add( this.CssClasses_.win + '-' + axis );
+			this.fieldElement.querySelectorAll( 'td' )[arr[i] - 1].classList.add( this.CssClasses_.WIN + '-' + axis );
 		}
 		console.log( 'Winner is: ' + this.run );
 		setTimeout(function() {
-			window.location.reload();
+			// window.location.reload();
 		}, 2000);
+	}
+
+	displayMessage(str) {
+		if (str) {
+			const elem = document.getElementById( this.CssIds_.MSG );
+			elem.classList.add( this.CssClasses_.MSG );
+			let msg = 'Выиграл';
+
+			switch(str) {
+				case 'human':
+					msg += this.playerFirstName === 'Вы' ? 'и ' + this.playerFirstName : ' ' + this.playerFirstName;
+					break;
+				case 'draw':
+					msg = 'Ничья';
+					break;
+				default:
+					msg += ' ' + this.names[this.run];
+			}
+
+			elem.textContent = msg + '!';
+
+			setTimeout( () => {
+				elem.classList.remove( this.CssClasses_.MSG );
+			}, this.Constant_.MSG_ANIM_TIMING );
+
+		}
+	}
+
+	restartMove() {
+		return new Promise( (resolve,reject) => {
+			setTimeout( () => {
+				const fieldCells = Array.from( this.fieldCells );
+
+				for (let i = 0; i < fieldCells.length; i++) {
+					fieldCells[i].ticked = false;
+					fieldCells[i].tickType = '';
+
+					const td = document.getElementById( i );
+					const remClass = Array.from( td.classList ).find( v => /winner/.test( v ) );
+					td.classList.remove( remClass );
+					const tick = td.querySelector( '.' + this.CssClasses_.TICK );
+					tick && tick.remove();
+
+					this.count = 0;
+					this.state = '';
+				}
+
+				resolve();
+			}, this.Constant_.RESTART_TIMING );
+		} );
 	}
 
 	draw() {
 		if (this.count === this.fieldSize) {
-			setTimeout(function() {
-				window.location.reload();
-			}, 2000);
-			console.log('Draw!');
+			this.sound.play( 'draw' );
+			this.displayMessage( 'draw' );
+			this.switchPartiPlayer();
+			this.restartMove()
+				.then(
+					result => {
+						this.makeMove();
+					}
+				);
+			return true;
 		}
+		return false;
 	}
 
 	computerMoveAnimation(id) {
@@ -511,17 +800,18 @@ class Game {
 			if (id >= 0) {
 				const cell = document.getElementById(id);
 				const cellCenter = cell.offsetWidth / 2;
-				const cursor = document.getElementById(this.CssIds_.cursor);
+				const cursor = document.getElementById(this.CssIds_.CURSOR);
 				const positionTop = cell.offsetTop + cellCenter - cursor.offsetTop - cursor.offsetHeight + 'px';
-				const positionLeft = cell.offsetLeft + cellCenter - cursor.offsetLeft + 'px';
+				// const positionLeft = cell.offsetLeft + cellCenter - cursor.offsetLeft + 'px';
+				const positionLeft = cursor.offsetLeft - cell.offsetLeft - cellCenter + 'px';
 
-				cursor.classList.remove(this.CssClasses_.hidden);
+				cursor.classList.remove(this.CssClasses_.HIDDEN);
 				cursor.style.top = positionTop;
-				cursor.style.left = positionLeft;
+				cursor.style.right = positionLeft;
 				setTimeout( () => {
-					cursor.classList.add(this.CssClasses_.hidden);
+					cursor.classList.add(this.CssClasses_.HIDDEN);
 					cursor.style.top = '';
-					cursor.style.left = '';
+					cursor.style.right = '';
 					resolve();
 				}, 1000 );
 			} else {
@@ -572,9 +862,11 @@ class UniqueArray extends Array {
 }
 
 
-const game = new Game();
+// const sound = new Sound();
 
-game.init()
-	.then(
-		result => game.makeMove()
-	);
+// const game = new Game( { sound: sound } );
+
+// game.init()
+// 	.then(
+// 		result => game.makeMove()
+// 	);

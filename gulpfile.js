@@ -13,6 +13,10 @@ var BLOCKS = {
 };
 
 var SOURCES = [
+  `${BLOCKS.common}/sound/sound.js`,
+  `${BLOCKS.common}/dice/dice.js`,
+  `${BLOCKS.common}/confetti/confetti.js`,
+  `${BLOCKS.common}/screen/screen.js`,
   `${BLOCKS.common}/game/game.js`
 ];
 
@@ -22,6 +26,9 @@ var WATCH = {
 	],
 	js: [
 		`${BLOCKS.common}/**/*.js`
+	],
+	html: [
+		'*.html'
 	],
 	img: 'img_pre/*'
 };
@@ -163,6 +170,7 @@ var watch = function() {
 	gulp.watch(WATCH.sass, ['sass']);
 	gulp.watch(WATCH.js, ['js-watch']);
 	gulp.watch(WATCH.img, ['img-watch']);
+	gulp.watch(WATCH.html).on('change', browserSync.reload);
 };
 
 // Converting Css to Scss

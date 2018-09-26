@@ -1,0 +1,53 @@
+/**
+ *
+ * dice
+ *
+ */
+
+$color: white;
+
+.dice {
+	box-sizing: border-box;
+	width: 80px;
+	height: 80px;
+	border-radius: 10px;
+	border: 6px solid $color;
+	&.is-hidden {
+		display: none;
+	}
+	&__side {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		&.is-hidden {
+			display: none;
+		}
+	}
+	&__side--3,
+	&__side--2 {
+		transform: rotate(-45deg);
+	}
+	&__side--6 {
+		transform: rotate(90deg);
+	}
+	&__dot {
+		width: 12px;
+		height: 12px;
+		margin: 5px;
+		border-radius: 100%;
+		background-color: $color;
+		.dice__side--2 & {
+			margin: 10px;
+		}
+		.dice__side--5 &,
+		.dice__side--4 & {
+			margin: 11px;
+		}
+		.dice__side--5 &:last-child {
+			margin-top: -55px;
+		}
+	}
+}

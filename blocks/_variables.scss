@@ -4,9 +4,16 @@
  *
  */
 
-$background: #42B4E6;
+// $screen: #607d8b;
+// $screen: #95e0fd;
+$screen: #42b4e6;
+$phrase: #4ce4e6;
+$phrase: #95e0fd;
+$background: #42b4e6;
 $text-color-primary: rgba(0, 0, 0, .89);
 $cursor-timing: .5s;
+$children: false;
+$anim-timing: 1s;
 
 /*----------  field  ----------*/
 
@@ -27,3 +34,12 @@ $nil-border-size: 12px;
 $cross-size: 44px;
 $cross-height: 12px;
 $color: white;
+
+/*----------  avatar  ----------*/
+
+$avatar-size: 90px;
+
+/*----------  message  ----------*/
+
+$message-font-size: 2.6rem;
+$animation-msg-timing: 1.5s;

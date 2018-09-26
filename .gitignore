@@ -3,3 +3,7 @@ node_modules/
 *.todo
 bundle/maps/
 .babelrc
+blocks/sound/sound_data/
+blocks/sound/*.wav
+blocks/sound/dice.mp3
+blocks/sound/*.aup

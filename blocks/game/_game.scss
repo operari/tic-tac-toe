@@ -183,11 +183,60 @@
 		position: absolute;
 		z-index: 1;
 		top: 0;
-		left: 0;
+		right: 0;
 		width: 45px;
 		height: 45px;
 		transition: all $cursor-timing linear;
 		background: url('../blocks/game/game_cursor_alt.svg') no-repeat;
 	}
-
+	&__status {
+		position: fixed;
+		z-index: 1;
+		top: 15%;
+		left: 0;
+		display: flex;
+		box-sizing: border-box;
+		width: 100%;
+		padding: 0 20%;
+		pointer-events: none;
+		justify-content: space-between;
+	}
+	&__player {
+		position: relative;
+		width: $avatar-size;
+		text-align: center;
+	}
+	&__avatar {
+		box-sizing: border-box;
+		display: inline-block;
+		width: $avatar-size;
+		height: $avatar-size;
+		border-radius: 10px;
+		border: 5px solid $border-color;
+	}
+	&__avatar--highlight {
+		box-shadow: 0 0 5px rgba(0,0,0,.3);
+		border-color: yellow;
+	}
+	&__name {
+		line-height: 1.1;
+		margin: 5px 0;
+		color: white;
+	}
+	&__store {
+		// font-family: 'Roboto';
+		font-size: 2rem;
+		line-height: 1.1;
+		display: inline-block;
+		color: $border-color;
+	}
+	&__message {
+		position: fixed;
+		z-index: 1;
+		top: calc(50% - #{$message-font-size} / 2);
+		left: 0;
+		width: 100%;
+		text-align: center;
+		text-shadow: 1px 1px 0 #000000;
+	}
 }
