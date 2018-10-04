@@ -14,6 +14,10 @@ $text-color-primary: rgba(0, 0, 0, .89);
 $cursor-timing: .5s;
 $children: false;
 $anim-timing: 1s;
+$pink: #ea5b71;
+$blue: #1d7399;
+$gold: #b3ad21;
+$purple: #585f80;
 
 /*----------  field  ----------*/
 
@@ -43,3 +47,9 @@ $avatar-size: 90px;
 
 $message-font-size: 2.6rem;
 $animation-msg-timing: 1.5s;
+
+/*----------  coin  ----------*/
+
+$coin-size: 28px;
+$coin-color: #dabd39;
+$coin-edge: #a88212;

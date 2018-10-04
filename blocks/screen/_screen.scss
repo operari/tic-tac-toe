@@ -5,6 +5,10 @@
  */
 
 .screen {
+	position: absolute;
+	z-index: 1;
+	top: 0;
+	left: 0;
 	display: flex;
 	justify-content: center;
 	width: 100%;
@@ -104,18 +108,6 @@
 		&.is-hidden {
 			display: none;
 		}
-	}
-	&__mode-training {
-		background-color: #ea5b71;
-	}
-	&__mode-computer {
-		background-color: #1d7399;
-	}
-	&__mode-human {
-		background-color: #b3ad21;
-	}
-	&__mode-network {
-		background-color: #585F80;
 	}
 	&__side {
 		&.is-hidden {

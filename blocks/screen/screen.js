@@ -21,7 +21,8 @@ class Screen {
 			MAIN: 'game_main',
 			SIDE: 'game_side',
 			FIRST: 'first_move',
-			DICE: 'dice'
+			DICE: 'dice',
+			WRP: 'wrapper'
 		};
 		this.__proto__.CssClasses_ = {
 			HIDDEN: 'is-hidden',
@@ -40,40 +41,45 @@ class Screen {
 	}
 
 	makeView() {
-		const html = `<div class="screen__inner">
-				<div id="${this.CssIds_.MAIN}" class="screen__main animated">
-					<h1 class="screen__title">Крестики-нолики</h1>
-					<div class="screen__phrase">Классика игровой индустрии</div>
+		const html = `
+			<div id="screen" class="screen animated fadeInDef">
+				<div class="screen__inner">
+					<div id="${this.CssIds_.MAIN}" class="screen__main animated">
+						<h1 class="screen__title">Крестики-нолики</h1>
+						<div class="screen__phrase">Классика игровой индустрии</div>
 
-					<div class="screen__robot">
-						<button type="button" id="${this.CssIds_.START}" class="screen__start">Начать игру</button>
+						<div class="screen__robot">
+							<button type="button" id="${this.CssIds_.START}" class="screen__start">Начать игру</button>
+						</div>
+					</div>
+					<div id="game_mode" class="screen__mode animated is-hidden">
+						<h2 class="screen__display">Выберите режим игры:</h2>
+						<button class="bg-color--pink" data-mode="training" data-players='{ "player1": "human", "player2": "computer" }'>Тренировка</button>
+						<button class="bg-color--blue" data-mode="vs_computer" data-players='{ "player1": "human", "player2": "computer" }'>С компьютером</button>
+						<button class="bg-color--gold" data-mode="vs_human" data-players='{ "player1": "human", "player2": "human1" }'>С человеком</button>
+						<button class="bg-color--purple" data-mode="network" data-players='{ "player1": "human", "player2": "human1" }' disabled>По сети</button>
+					</div>
+					<div id="${this.CssIds_.SIDE}" class="screen__side animated is-hidden">
+						<h2 class="screen__display">Выберите сторону:</h2>
+						<div>
+							<button class="screen__side-cross ml-button--fab" type="button" data-side="cross">x</button>
+							<button class="screen__side-nil ml-button--fab" type="button" data-side="nil">o</button>
+						</div>
+					</div>
+					<div id="${this.CssIds_.FIRST}" class="screen__pick-move animated is-hidden">
+						<h2 class="screen__display">Выберите кто ходит первым:</h2>
+						<button class="ml-button--color" data-run="human">Вы</button>
+						<button class="ml-button--color" data-run="computer">Компьютер</button>
+					</div>
+					<div id="${this.CssIds_.DICE}" class="screen__dice is-hidden animated">
+						<button class="ml-button--color screen__dice--button">Начать</button>
 					</div>
 				</div>
-				<div id="game_mode" class="screen__mode animated is-hidden">
-					<h2 class="screen__display">Выберите режим игры:</h2>
-					<button class="screen__mode-training" data-mode="training" data-players='{ "player1": "human", "player2": "computer" }'>Тренировка</button>
-					<button class="screen__mode-computer" data-mode="vs_computer" data-players='{ "player1": "human", "player2": "computer" }'>С компьютером</button>
-					<button class="screen__mode-human" data-mode="vs_human" data-players='{ "player1": "human", "player2": "human1" }'>С человеком</button>
-					<button class="screen__mode-network" data-mode="network" data-players='{ "player1": "human", "player2": "human1" }' disabled>По сети</button>
-				</div>
-				<div id="${this.CssIds_.SIDE}" class="screen__side animated is-hidden">
-					<h2 class="screen__display">Выберите сторону:</h2>
-					<div>
-						<button class="screen__side-cross ml-button--fab" type="button" data-side="cross">x</button>
-						<button class="screen__side-nil ml-button--fab" type="button" data-side="nil">o</button>
-					</div>
-				</div>
-				<div id="${this.CssIds_.FIRST}" class="screen__pick-move animated is-hidden">
-					<h2 class="screen__display">Выберите кто ходит первым:</h2>
-					<button class="ml-button--color" data-run="human">Вы</button>
-					<button class="ml-button--color" data-run="computer">Компьютер</button>
-				</div>
-				<div id="${this.CssIds_.DICE}" class="screen__dice is-hidden animated">
-					<button class="ml-button--color screen__dice--button">Начать</button>
-				</div>
-			</div>`;
+			</div>
+			`;
 
-		this.screen.innerHTML += html;
+		document.getElementById( this.CssIds_.WRP ).insertAdjacentHTML( 'beforeend', html );
+		this.screen = document.getElementById( this.CssIds_.SCREEN );
 	}
 
 	makeDiceWinner() {
@@ -230,7 +236,9 @@ class Screen {
 							);
 					} );
 					el.addEventListener( 'mouseover', (e) => {
-						this.sound.play( 'hover' );
+						if (!e.target.classList.contains( this.CssClasses_.HIDDEN )) {
+							this.sound.play( 'hover' );
+						}
 					} );
 				} else {
 					resolve();
@@ -240,9 +248,7 @@ class Screen {
 	}
 
 	init() {
-		document.addEventListener( 'DOMContentLoaded', (e) => {
-			this.screen = document.getElementById( this.CssIds_.SCREEN );
-			if (!this.screen) return;
+		var handler = (e) => {
 			this.makeView();
 			this.sound = new Sound();
 			this.options.sound = this.sound;
@@ -250,7 +256,8 @@ class Screen {
 				.then(
 					result => {
 						this.screen.classList.toggle( this.CssClasses_.HIDDEN );
-						this.animate( this.screen, this.CssClasses_.FADEOUT );
+						this.screen.classList.toggle( this.CssClasses_.FADEOUT );
+						document.getElementById( this.CssIds_.SCREEN ).remove();
 
 						const game = new Game( this.options );
 						game.init()
@@ -260,7 +267,12 @@ class Screen {
 
 					}
 				);
-		} );
+		};
+		if (document.readyState !== 'loading') {
+			handler();
+		} else {
+			document.addEventListener( 'DOMContentLoaded', handler );
+		}
 	}
 
 }

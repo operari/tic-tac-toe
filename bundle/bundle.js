@@ -18,10 +18,15 @@ var Sound = function () {
 			flash: { start: 4.00, end: 5.00 },
 			draw: { start: 5.50, end: 6.00 },
 			win: { start: 6.50, end: 7.60 },
-			point: { start: 8.00, end: 9.00 }
+			point: { start: 8.00, end: 9.00 },
+			swing: { start: 9.50, end: 10.50 },
+			level: { start: 11.00, end: 11.70 },
+			coin: { start: 12.00, end: 12.60 },
+			will: { start: 13.00, end: 15.00 }
 		};
 		this.fileName = 'sound.mp3';
-		this.playerId = 'player';
+		this.playerId = 'audio_player';
+		this.wrapperId = 'wrapper';
 		this.path = 'blocks/sound/';
 		Object.assign(this, options);
 		this.init();
@@ -30,23 +35,28 @@ var Sound = function () {
 	_createClass(Sound, [{
 		key: 'appendPlayer',
 		value: function appendPlayer() {
-			var elem = document.getElementById(this.playerId);
+			this.removePlayer();
+			var wrapper = document.getElementById(this.wrapperId);
+			var html = '\n\t\t\t<div id="audio_player" class="sound">\n\t\t\t\t<audio preload="metadata"></audio>\n\t\t\t\t<button id="toggle_sound" class="ml-button--dim sound__toggle">\n\t\t\t\t\t<svg xmlns="http://www.w3.org/2000/svg" width="43" height="43" fill="#585f80" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/><path d="M0 0h24v24H0z" fill="none"/></svg>\n\t\t\t\t\t<svg class="is-hidden" xmlns="http://www.w3.org/2000/svg" width="43" height="43" fill="#585f80" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/><path d="M0 0h24v24H0z" fill="none"/></svg>\n\t\t\t\t\t<span id="m" class="tttoe__menu-bar-key">m</span>\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t';
 
-			if (elem && !elem.children.length) {
-				this.element_ = elem;
-				var audio = document.createElement('audio');
-				audio.preload = 'metadata';
-				elem.appendChild(audio);
-				this.audio_ = this.element_.querySelector('audio');
-				return true;
+			wrapper.insertAdjacentHTML('beforeend', html);
+
+			this.element_ = document.getElementById(this.playerId);
+			this.audioTrack();
+		}
+	}, {
+		key: 'removePlayer',
+		value: function removePlayer() {
+			var player = document.getElementById(this.playerId);
+			if (player) {
+				player.remove();
 			}
-
-			return false;
 		}
 	}, {
 		key: 'audioTrack',
 		value: function audioTrack() {
 			if (this.fileName) {
+				this.audio_ = this.element_.querySelector('audio');
 				this.audio_.src = this.path + this.fileName + '?v=' + Date.now();
 			}
 		}
@@ -64,7 +74,7 @@ var Sound = function () {
 							_this.stop();
 						}, (_this.timings[name].end - _this.timings[name].start) * 1000);
 					}).catch(function (error) {
-						console.error(error);
+						console.info(error);
 					});
 				}
 			}
@@ -79,18 +89,39 @@ var Sound = function () {
 			}
 		}
 	}, {
+		key: 'mute',
+		value: function mute() {
+			this.audio_.muted = !this.audio_.muted;
+		}
+	}, {
 		key: 'init',
 		value: function init() {
 			var _this2 = this;
 
-			var loadDom = function loadDom(e) {
+			var handler = function handler(e) {
 				_this2.appendPlayer();
-				_this2.audioTrack();
+				document.getElementById('toggle_sound').addEventListener('click', function (e) {
+					_this2.play('click');
+					var btn = e.currentTarget;
+					btn.children[+!_this2.audio_.muted].classList.remove('is-hidden');
+					btn.children[+_this2.audio_.muted].classList.add('is-hidden');
+					setTimeout(function () {
+						_this2.mute();
+					}, 500);
+				});
+				document.getElementById('toggle_sound').addEventListener('mouseenter', function (e) {
+					_this2.play('hover');
+				});
+				document.addEventListener('keyup', function (e) {
+					if (e.key.toLowerCase() === 'm') {
+						document.getElementById('m').parentNode.click();
+					}
+				});
 			};
 			if (document.readyState !== 'loading') {
-				loadDom();
+				handler();
 			} else {
-				document.addEventListener('DOMContentLoaded', loadDom);
+				document.addEventListener('DOMContentLoaded', handler);
 			}
 		}
 	}]);
@@ -313,7 +344,8 @@ var Screen = function () {
 			MAIN: 'game_main',
 			SIDE: 'game_side',
 			FIRST: 'first_move',
-			DICE: 'dice'
+			DICE: 'dice',
+			WRP: 'wrapper'
 		};
 		this.__proto__.CssClasses_ = {
 			HIDDEN: 'is-hidden',
@@ -334,9 +366,10 @@ var Screen = function () {
 	_createClass(Screen, [{
 		key: 'makeView',
 		value: function makeView() {
-			var html = '<div class="screen__inner">\n\t\t\t\t<div id="' + this.CssIds_.MAIN + '" class="screen__main animated">\n\t\t\t\t\t<h1 class="screen__title">\u041A\u0440\u0435\u0441\u0442\u0438\u043A\u0438-\u043D\u043E\u043B\u0438\u043A\u0438</h1>\n\t\t\t\t\t<div class="screen__phrase">\u041A\u043B\u0430\u0441\u0441\u0438\u043A\u0430 \u0438\u0433\u0440\u043E\u0432\u043E\u0439 \u0438\u043D\u0434\u0443\u0441\u0442\u0440\u0438\u0438</div>\n\n\t\t\t\t\t<div class="screen__robot">\n\t\t\t\t\t\t<button type="button" id="' + this.CssIds_.START + '" class="screen__start">\u041D\u0430\u0447\u0430\u0442\u044C \u0438\u0433\u0440\u0443</button>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div id="game_mode" class="screen__mode animated is-hidden">\n\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0438\u0433\u0440\u044B:</h2>\n\t\t\t\t\t<button class="screen__mode-training" data-mode="training" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0422\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043A\u0430</button>\n\t\t\t\t\t<button class="screen__mode-computer" data-mode="vs_computer" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0421 \u043A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440\u043E\u043C</button>\n\t\t\t\t\t<button class="screen__mode-human" data-mode="vs_human" data-players=\'{ "player1": "human", "player2": "human1" }\'>\u0421 \u0447\u0435\u043B\u043E\u0432\u0435\u043A\u043E\u043C</button>\n\t\t\t\t\t<button class="screen__mode-network" data-mode="network" data-players=\'{ "player1": "human", "player2": "human1" }\' disabled>\u041F\u043E \u0441\u0435\u0442\u0438</button>\n\t\t\t\t</div>\n\t\t\t\t<div id="' + this.CssIds_.SIDE + '" class="screen__side animated is-hidden">\n\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u0442\u043E\u0440\u043E\u043D\u0443:</h2>\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<button class="screen__side-cross ml-button--fab" type="button" data-side="cross">x</button>\n\t\t\t\t\t\t<button class="screen__side-nil ml-button--fab" type="button" data-side="nil">o</button>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div id="' + this.CssIds_.FIRST + '" class="screen__pick-move animated is-hidden">\n\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u043A\u0442\u043E \u0445\u043E\u0434\u0438\u0442 \u043F\u0435\u0440\u0432\u044B\u043C:</h2>\n\t\t\t\t\t<button class="ml-button--color" data-run="human">\u0412\u044B</button>\n\t\t\t\t\t<button class="ml-button--color" data-run="computer">\u041A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440</button>\n\t\t\t\t</div>\n\t\t\t\t<div id="' + this.CssIds_.DICE + '" class="screen__dice is-hidden animated">\n\t\t\t\t\t<button class="ml-button--color screen__dice--button">\u041D\u0430\u0447\u0430\u0442\u044C</button>\n\t\t\t\t</div>\n\t\t\t</div>';
+			var html = '\n\t\t\t<div id="screen" class="screen animated fadeInDef">\n\t\t\t\t<div class="screen__inner">\n\t\t\t\t\t<div id="' + this.CssIds_.MAIN + '" class="screen__main animated">\n\t\t\t\t\t\t<h1 class="screen__title">\u041A\u0440\u0435\u0441\u0442\u0438\u043A\u0438-\u043D\u043E\u043B\u0438\u043A\u0438</h1>\n\t\t\t\t\t\t<div class="screen__phrase">\u041A\u043B\u0430\u0441\u0441\u0438\u043A\u0430 \u0438\u0433\u0440\u043E\u0432\u043E\u0439 \u0438\u043D\u0434\u0443\u0441\u0442\u0440\u0438\u0438</div>\n\n\t\t\t\t\t\t<div class="screen__robot">\n\t\t\t\t\t\t\t<button type="button" id="' + this.CssIds_.START + '" class="screen__start">\u041D\u0430\u0447\u0430\u0442\u044C \u0438\u0433\u0440\u0443</button>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="game_mode" class="screen__mode animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0438\u0433\u0440\u044B:</h2>\n\t\t\t\t\t\t<button class="bg-color--pink" data-mode="training" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0422\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043A\u0430</button>\n\t\t\t\t\t\t<button class="bg-color--blue" data-mode="vs_computer" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0421 \u043A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440\u043E\u043C</button>\n\t\t\t\t\t\t<button class="bg-color--gold" data-mode="vs_human" data-players=\'{ "player1": "human", "player2": "human1" }\'>\u0421 \u0447\u0435\u043B\u043E\u0432\u0435\u043A\u043E\u043C</button>\n\t\t\t\t\t\t<button class="bg-color--purple" data-mode="network" data-players=\'{ "player1": "human", "player2": "human1" }\' disabled>\u041F\u043E \u0441\u0435\u0442\u0438</button>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.SIDE + '" class="screen__side animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u0442\u043E\u0440\u043E\u043D\u0443:</h2>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<button class="screen__side-cross ml-button--fab" type="button" data-side="cross">x</button>\n\t\t\t\t\t\t\t<button class="screen__side-nil ml-button--fab" type="button" data-side="nil">o</button>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.FIRST + '" class="screen__pick-move animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u043A\u0442\u043E \u0445\u043E\u0434\u0438\u0442 \u043F\u0435\u0440\u0432\u044B\u043C:</h2>\n\t\t\t\t\t\t<button class="ml-button--color" data-run="human">\u0412\u044B</button>\n\t\t\t\t\t\t<button class="ml-button--color" data-run="computer">\u041A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440</button>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.DICE + '" class="screen__dice is-hidden animated">\n\t\t\t\t\t\t<button class="ml-button--color screen__dice--button">\u041D\u0430\u0447\u0430\u0442\u044C</button>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t';
 
-			this.screen.innerHTML += html;
+			document.getElementById(this.CssIds_.WRP).insertAdjacentHTML('beforeend', html);
+			this.screen = document.getElementById(this.CssIds_.SCREEN);
 		}
 	}, {
 		key: 'makeDiceWinner',
@@ -503,7 +536,9 @@ var Screen = function () {
 							});
 						});
 						el.addEventListener('mouseover', function (e) {
-							_this3.sound.play('hover');
+							if (!e.target.classList.contains(_this3.CssClasses_.HIDDEN)) {
+								_this3.sound.play('hover');
+							}
 						});
 					} else {
 						resolve();
@@ -516,22 +551,26 @@ var Screen = function () {
 		value: function init() {
 			var _this5 = this;
 
-			document.addEventListener('DOMContentLoaded', function (e) {
-				_this5.screen = document.getElementById(_this5.CssIds_.SCREEN);
-				if (!_this5.screen) return;
+			var handler = function handler(e) {
 				_this5.makeView();
 				_this5.sound = new Sound();
 				_this5.options.sound = _this5.sound;
 				_this5.controller().then(function (result) {
 					_this5.screen.classList.toggle(_this5.CssClasses_.HIDDEN);
-					_this5.animate(_this5.screen, _this5.CssClasses_.FADEOUT);
+					_this5.screen.classList.toggle(_this5.CssClasses_.FADEOUT);
+					document.getElementById(_this5.CssIds_.SCREEN).remove();
 
 					var game = new Game(_this5.options);
 					game.init().then(function (result) {
 						return game.makeMove();
 					});
 				});
-			});
+			};
+			if (document.readyState !== 'loading') {
+				handler();
+			} else {
+				document.addEventListener('DOMContentLoaded', handler);
+			}
 		}
 	}]);
 
@@ -583,9 +622,11 @@ var Game = function () {
 
 		this.fieldSize = 9;
 		this.run = 'computer';
-		this.mode = 'training';
+		this.mode = 'vs_computer';
 		this.parti = 3;
+		this.difficulty = 'hard';
 		this.store = {};
+		this.openMenu = false;
 		this.players = {
 			player1: 'human',
 			player2: 'computer'
@@ -606,6 +647,42 @@ var Game = function () {
 		this.fieldCells = {};
 		this.count = 0;
 		this.state = '';
+		this.level = 1;
+		this.levelGrow = {
+			value: 500,
+			increase: 50,
+			bonusPercent: 20,
+			bonusLosePercent: 5
+		};
+		this.expData = {
+			winPointsGame: 100,
+			losePercent: 20,
+			points: 0,
+			partiPoints: 0,
+			currentLevelExp: 0,
+			nextLevelExp: 0
+		};
+		this.coinsData = {
+			coins: 0,
+			getExpInterval: 500,
+			getCoins: 1,
+			thresholdExp: 0
+		};
+		this.volitionData = {
+			value: 0,
+			interval: 10,
+			points: 99,
+			increasePercent: 10
+		};
+		this.randomCoinData = {
+			chancePercent: 40,
+			added: false,
+			index: -1
+		};
+		Object.defineProperty(this.coinsData, 'needExp', {
+			value: this.coinsData.getExpInterval,
+			writable: true
+		});
 		this.__proto__.CssClasses_ = {
 			FIELD: 'tttoe',
 			CELL: 'tttoe__cell',
@@ -614,21 +691,48 @@ var Game = function () {
 			WIN: 'tttoe__cell--winner',
 			HIDDEN: 'is-hidden',
 			FADEIN_DEF: 'fadeInDef',
+			FADE_OUT: 'fadeOut',
 			MSG: 'message',
 			AVATAR: 'tttoe__avatar',
-			SHAKE: 'shake'
+			SHAKE: 'shake',
+			MENU: 'tttoe__menu',
+			FADEIN_LEFT: 'fadeInLeftBig',
+			FADEIN_RIGHT: 'fadeOutRightBig',
+			FLIP: 'flip',
+			FLASH: 'flash',
+			BOUNCE_IN: 'bounceIn',
+			COIN: 'tttoe__coin',
+			RUBBER_BAND: 'rubberBand'
 		};
 		this.__proto__.CssIds_ = {
 			APP: 'game',
 			CURSOR: 'comp_cursor',
+			WRP: 'wrapper',
 			CONTAINER: 'container',
-			MSG: 'message'
+			MSG: 'message',
+			BAR: 'menu_bar',
+			RESUME: 'resume',
+			MAIN_MENU: 'main_menu',
+			F10: 'f10',
+			LVL: 'level',
+			POINTS: 'points',
+			EXP: 'experience',
+			BONUS: 'bonus',
+			COINS: 'coins',
+			FIELD_WRP: 'field_wrp',
+			VOLITION: 'volition'
 		};
 		this.__proto__.Constant_ = {
 			RESTART_TIMING: 2000,
-			CONFETTI_TIMING: 5000,
+			CONFETTI_TIMING: 2000,
 			TICK_TIMING: 500,
-			MSG_ANIM_TIMING: 1500
+			MSG_ANIM_TIMING: 1500,
+			ANIM_TIMING: 1000,
+			BONUS_TIMING: 2000,
+			SOUND_INTERVAL: 500,
+			NEXT_LVL_TXT: 'След. ур.: ',
+			WILL: 'Воля',
+			VOLITION_COLOR: '#545bb0'
 		};
 		Object.assign(this, options);
 		this.partiRun = this.run;
@@ -806,23 +910,25 @@ var Game = function () {
 		value: function makeView() {
 			var _this2 = this;
 
-			var html = '\n\t\t\t<div id="status" class="tttoe__status">\n\t\t\t\t<div id="player1" class="tttoe__player">\n\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t<img src="blocks/game/' + this.players.player1 + '.png" alt="" />\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="tttoe__name">' + this.playerFirstName + '</div>\n\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t</div>\n\t\t\t\t<div id="player2" class="tttoe__player">\n\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t<img src="blocks/game/' + this.players.player2 + '.png" alt="" />\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="tttoe__name">' + this.playerSecondName + '</div>\n\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div id="comp_cursor" class="tttoe__computer-cursor is-hidden"></div>\n\t\t\t<div id="message" class="tttoe__message animated animated--msg"></div>';
+			var html = '\n\t\t\t<div id="container" class="layout__container is-hidden animated">\n\t\t\t\t<div id="game" class="layout__game">\n\t\t\t\t\t<div class="layout__header">\n\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t<div class="tttoe__coins">\n\t\t\t\t\t\t\t\t<div class="tttoe__coin animated"></div>\n\t\t\t\t\t\t\t\t<div id="' + this.CssIds_.COINS + '" class="tttoe__coins-count">' + this.coinsData.coins + '</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div id="menu_bar" class="tttoe__menu-bar">\n\t\t\t\t\t\t\t\t<button class="ml-button--dim">\n\t\t\t\t\t\t\t\t\t<svg class="tttoe__menu-bar-ico" xmlns="http://www.w3.org/2000/svg" width="42" height="43" fill="#585f80" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>\n\t\t\t\t\t\t\t\t\t<span id="f10" class="tttoe__menu-bar-key">f10</span>\n\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div id="status" class="tttoe__status row">\n\t\t\t\t\t\t\t<div id="player1" class="tttoe__player">\n\t\t\t\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t\t\t\t<img src="blocks/game/' + this.players.player1 + '.png" alt="" />\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__name">' + this.playerFirstName + '</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div id="player2" class="tttoe__player">\n\t\t\t\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t\t\t\t<img src="blocks/game/' + this.players.player2 + '.png" alt="" />\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__name">' + this.playerSecondName + '</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__middle">\n\t\t\t\t\t\t<div id="' + this.CssIds_.FIELD_WRP + '" class="tttoe__field-wrp row row--center">\n\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<div id="comp_cursor" class="tttoe__computer-cursor is-hidden"></div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__footer">\n\t\t\t\t\t\t<div class="row row--right">\n\t\t\t\t\t\t\t<div class="tttoe__volition" data-title="' + this.Constant_.WILL + '">\n\t\t\t\t\t\t\t\t<div id="volition" class="tttoe__volition-count">0</div>\n\t\t\t\t\t\t\t\t<svg class="tttoe__volition-ico animated" width="42" height="42" fill="#ffffff" aria-hidden="true" data-prefix="fas" data-icon="brain" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M208 0c-29.87 0-54.74 20.55-61.8 48.22-.75-.02-1.45-.22-2.2-.22-35.34 0-64 28.65-64 64 0 4.84.64 9.51 1.66 14.04C52.54 138 32 166.57 32 200c0 12.58 3.16 24.32 8.34 34.91C16.34 248.72 0 274.33 0 304c0 33.34 20.42 61.88 49.42 73.89-.9 4.57-1.42 9.28-1.42 14.11 0 39.76 32.23 72 72 72 4.12 0 8.1-.55 12.03-1.21C141.61 491.31 168.25 512 200 512c39.77 0 72-32.24 72-72V205.45c-10.91 8.98-23.98 15.45-38.36 18.39-4.97 1.02-9.64-2.82-9.64-7.89v-16.18c0-3.57 2.35-6.78 5.8-7.66 24.2-6.16 42.2-27.95 42.2-54.04V64c0-35.35-28.66-64-64-64zm368 304c0-29.67-16.34-55.28-40.34-69.09 5.17-10.59 8.34-22.33 8.34-34.91 0-33.43-20.54-62-49.66-73.96 1.02-4.53 1.66-9.2 1.66-14.04 0-35.35-28.66-64-64-64-.75 0-1.45.2-2.2.22C422.74 20.55 397.87 0 368 0c-35.34 0-64 28.65-64 64v74.07c0 26.09 17.99 47.88 42.2 54.04 3.46.88 5.8 4.09 5.8 7.66v16.18c0 5.07-4.68 8.91-9.64 7.89-14.38-2.94-27.44-9.41-38.36-18.39V440c0 39.76 32.23 72 72 72 31.75 0 58.39-20.69 67.97-49.21 3.93.67 7.91 1.21 12.03 1.21 39.77 0 72-32.24 72-72 0-4.83-.52-9.54-1.42-14.11 29-12.01 49.42-40.55 49.42-73.89z"></path></svg>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="tttoe__exp-bar">\n\t\t\t\t\t\t\t\t<span id="' + this.CssIds_.POINTS + '" class="tttoe__exp-points animated">' + this.expData.points + '</span>\n\t\t\t\t\t\t\t\t<div id="' + this.CssIds_.EXP + '" class="tttoe__experience" data-next-lvl="' + this.Constant_.NEXT_LVL_TXT + ' ' + this.setNextLevelExp() + '"><span></span></div>\n\t\t\t\t\t\t\t\t<div id="level" class="tttoe__level">\u0423\u0440\u043E\u0432\u0435\u043D\u044C: <span class="animated">' + this.level + '</span></div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__popups">\n\t\t\t\t\t\t<div id="message" class="tttoe__message animated animated--msg"></div>\n\t\t\t\t\t\t<div class="tttoe__menu animated is-hidden">\n\t\t\t\t\t\t\t<div class="game-menu">\n\t\t\t\t\t\t\t\t<button id="' + this.CssIds_.RESUME + '" class="game-menu__action bg-color--blue">\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F</button>\n\t\t\t\t\t\t\t\t<button class="game-menu__action bg-color--pink">\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430</button>\n\t\t\t\t\t\t\t\t<button class="game-menu__action bg-color--gold">\u041E\u0431 \u0438\u0433\u0440\u0435</button>\n\t\t\t\t\t\t\t\t<button id="' + this.CssIds_.MAIN_MENU + '" class="game-menu__action bg-color--purple">\u0413\u043B\u0430\u0432\u043D\u043E\u0435 \u043C\u0435\u043D\u044E</button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__bonus animated is-hidden"><div id="bonus"></div></div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t';
 
 			var field = this.makeViewField();
 
 			return new Promise(function (resolve, reject) {
-				var loadDom = function loadDom(e) {
+				var handler = function handler(e) {
+					var wrapper = document.getElementById(_this2.CssIds_.WRP);
+					wrapper.insertAdjacentHTML('beforeend', html);
 					_this2.fieldElement = document.getElementById(_this2.CssIds_.APP);
-					_this2.fieldElement.innerHTML += html;
-					_this2.fieldElement.appendChild(field);
+					document.getElementById(_this2.CssIds_.FIELD_WRP).firstElementChild.appendChild(field);
+					_this2.appendRandomCoin();
 					_this2.showView();
 					resolve();
 				};
 
 				if (document.readyState === 'complete') {
-					loadDom();
+					handler();
 				} else {
-					document.addEventListener('DOMContentLoaded', loadDom);
+					document.addEventListener('DOMContentLoaded', handler);
 				}
 			});
 		}
@@ -883,11 +989,13 @@ var Game = function () {
 		key: 'actionsAfterWin',
 		value: function actionsAfterWin(comb, axis) {
 			this.setStore();
+			this.setPoints(this.run);
 			this.displayWinner(comb, axis);
 			this.switchPartiPlayer();
 			var winnerName = this.getPartiWinner();
 			this.displayMessage(winnerName);
 			if (winnerName) {
+				this.setPoints(winnerName, true);
 				var loserName = this.getPartiLoser(winnerName);
 				var winnerId = this.getPlayerId(winnerName);
 				var loserId = this.getPlayerId(loserName);
@@ -906,9 +1014,10 @@ var Game = function () {
 				var _this4 = this;
 
 				var target = e.target;
+				var td = target.closest('td');
 
-				if (target.tagName === 'DIV') {
-					var indx = target.closest('td').id;
+				if (target.tagName === 'DIV' && td) {
+					var indx = td.id;
 					var ticked = this.tick(indx, this.tickType[curr]);
 					if (ticked) {
 						this.fieldElement.removeEventListener('click', h);
@@ -926,7 +1035,16 @@ var Game = function () {
 								}
 							}
 							this.run = next;
-							this.makeMove();
+
+							if (this.randomCoinData.added && indx == this.randomCoinData.index) {
+								this.coinsData.coins += 1;
+								this.displayCoins(true).then(function (result) {
+									_this4.makeMove();
+								});
+								this.randomCoinData.added = false;
+							} else {
+								this.makeMove();
+							}
 						}
 					}
 				}
@@ -1075,7 +1193,7 @@ var Game = function () {
 					this.state = 'win';
 					result = resultCompareComputer;
 				} else if (resultCompareHuman.cell) {
-					result.cell = resultCompareHuman.cell;
+					result.cell = this.difficulty === 'hard' ? resultCompareHuman.cell : this.chooseRandomCell(resultCompareComputer);
 				} else {
 					if (resultCompareComputer.length) {
 						result.cell = this.chooseRandomCell(resultCompareComputer);
@@ -1255,15 +1373,126 @@ var Game = function () {
 			this.displayStore();
 		}
 	}, {
+		key: 'setPoints',
+		value: function setPoints(winner, bonus) {
+			var _this8 = this;
+
+			if (this.mode === 'vs_computer') {
+				if (!bonus) {
+					this.expData.points = winner === 'human' ? this.expData.points + this.expData.winPointsGame : this.expData.points && this.expData.points - this.losePoints;
+					this.expData.partiPoints += winner === 'human' ? this.expData.winPointsGame : 0;
+				} else {
+					this.expData.points = winner === 'human' ? this.expData.points + this.bonusPoints : this.expData.points - this.bonusLosePoints;
+					this.expData.points = Number.parseInt(this.expData.points);
+					setTimeout(function () {
+						_this8.displayBonus(winner);
+						_this8.expData.partiPoints = 0;
+					}, this.Constant_.MSG_ANIM_TIMING);
+				}
+				if (this.gameWinPoints > 0) {
+					this.levelUp();
+				} else {
+					this.levelDown();
+				}
+				this.setCoins();
+				this.displayExperience();
+			}
+		}
+	}, {
+		key: 'setNextLevelExp',
+		value: function setNextLevelExp() {
+			this.expData.nextLevelExp = (this.expData.nextLevelExp || this.expData.currentLevelExp) + this.levelGrow.value + this.level * this.levelGrow.increase;
+			return this.expData.nextLevelExp;
+		}
+	}, {
+		key: 'setCurrentLevelExp',
+		value: function setCurrentLevelExp() {
+			if (this.level === 1) {
+				this.expData.currentLevelExp = 0;
+			} else {
+				this.expData.currentLevelExp = this.expData.currentLevelExp + this.levelGrow.value + (this.level - 1) * this.levelGrow.increase - this.expData.currentLevelExp;
+			}
+		}
+	}, {
+		key: 'setCoins',
+		value: function setCoins() {
+			if (this.expData.points >= this.coinsData.needExp) {
+				this.coinsData.coins += this.coinsData.getCoins;
+				this.coinsData.thresholdExp += this.coinsData.getExpInterval;
+				this.coinsData.needExp += this.coinsData.getExpInterval;
+				this.displayCoins();
+			}
+		}
+	}, {
+		key: 'setVolition',
+		value: function setVolition() {
+			if (this.mode === 'vs_computer') {
+				this.volitionData.value += 1;
+				if (!(this.volitionData.value % this.volitionData.interval)) {
+					var points = this.volitionData.points + this.volitionData.value * this.volitionData.increasePercent / 100;
+					var tmp = this.expData.winPointsGame;
+					this.expData.winPointsGame = points;
+					this.setPoints('human');
+					this.expData.winPointsGame = tmp;
+					this.displayVolition(true, points);
+				} else {
+					this.displayVolition();
+				}
+			}
+		}
+	}, {
+		key: 'levelUp',
+		value: function levelUp() {
+			var _this9 = this;
+
+			if (this.expData.points >= this.expData.nextLevelExp) {
+				this.level++;
+				this.expData.currentLevelExp = this.expData.nextLevelExp;
+				this.setNextLevelExp();
+				setTimeout(function () {
+					_this9.sound.play('level');
+				}, this.Constant_.SOUND_INTERVAL + 200);
+				this.displayLevel();
+				document.getElementById(this.CssIds_.EXP).dataset.nextLvl = this.Constant_.NEXT_LVL_TXT + this.expData.nextLevelExp;
+			}
+		}
+	}, {
+		key: 'levelDown',
+		value: function levelDown() {
+			if (this.expData.points < this.expData.currentLevelExp) {
+				this.level--;
+				this.expData.nextLevelExp = this.expData.currentLevelExp;
+				this.setCurrentLevelExp();
+				this.displayLevel(false);
+				document.getElementById(this.CssIds_.EXP).dataset.nextLvl = this.Constant_.NEXT_LVL_TXT + this.expData.nextLevelExp;
+			}
+		}
+	}, {
+		key: 'appendRandomCoin',
+		value: function appendRandomCoin() {
+			if (this.mode === 'vs_computer') {
+				var chance = this.getRandomInt(0, 101);
+				if (chance <= this.randomCoinData.chancePercent) {
+					var i = this.getRandomInt(0, this.fieldSize);
+					var coin = document.querySelector('.' + this.CssClasses_.COIN).cloneNode();
+					coin.classList.add(this.CssClasses_.COIN + '--random');
+					coin.classList.add(this.CssClasses_.HIDDEN);
+					var cell = document.querySelectorAll('.' + this.CssClasses_.CELL)[i];
+					cell.firstElementChild.appendChild(coin);
+					this.randomCoinData.added = true;
+					this.randomCoinData.index = i;
+				}
+			}
+		}
+	}, {
 		key: 'getPartiWinner',
 		value: function getPartiWinner() {
-			var _this8 = this;
+			var _this10 = this;
 
 			var stores = Object.values(this.store);
 			var sum = stores.reduce(function (a, b) {
 				return a + b;
 			});
-
 			if (sum === this.parti) {
 				this.sound.play('win');
 				var n = Math.max.apply(null, stores);
@@ -1274,7 +1503,7 @@ var Game = function () {
 				var prop = this.getPlayerId(winner);
 
 				setTimeout(function () {
-					_this8.resetStores();
+					_this10.resetStores();
 				}, this.Constant_.RESTART_TIMING);
 
 				return winner;
@@ -1306,16 +1535,17 @@ var Game = function () {
 	}, {
 		key: 'switchPartiPlayer',
 		value: function switchPartiPlayer() {
-			var _this9 = this;
+			var _this11 = this;
 
 			var playersNames = Object.values(this.players);
 			this.run = this.partiRun = playersNames.find(function (v) {
-				return v !== _this9.partiRun;
+				return v !== _this11.partiRun;
 			});
 		}
 	}, {
 		key: 'animate',
-		value: function animate(el, cls, timing) {
+		value: function animate(el, cls) {
+			var timing = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
 			var del = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
 
 			if (el) {
@@ -1383,15 +1613,12 @@ var Game = function () {
 			for (var i = 0; i < arr.length; i++) {
 				this.fieldElement.querySelectorAll('td')[arr[i] - 1].classList.add(this.CssClasses_.WIN + '-' + axis);
 			}
-			console.log('Winner is: ' + this.run);
-			setTimeout(function () {
-				// window.location.reload();
-			}, 2000);
+			// console.log( 'Winner is: ' + this.run );
 		}
 	}, {
 		key: 'displayMessage',
 		value: function displayMessage(str) {
-			var _this10 = this;
+			var _this12 = this;
 
 			if (str) {
 				var elem = document.getElementById(this.CssIds_.MSG);
@@ -1406,24 +1633,117 @@ var Game = function () {
 						msg = 'Ничья';
 						break;
 					default:
-						msg += ' ' + this.names[this.run];
+						msg += ' ' + this.names[str];
 				}
 
 				elem.textContent = msg + '!';
 
 				setTimeout(function () {
-					elem.classList.remove(_this10.CssClasses_.MSG);
+					elem.classList.remove(_this12.CssClasses_.MSG);
 				}, this.Constant_.MSG_ANIM_TIMING);
+			}
+		}
+	}, {
+		key: 'displayExperience',
+		value: function displayExperience() {
+			var needLvlExp = this.expData.nextLevelExp - this.expData.currentLevelExp;
+			var elem = document.getElementById(this.CssIds_.EXP);
+			elem.firstElementChild.style.width = Number.parseInt(this.gameWinPoints / needLvlExp * 100) + '%';
+			document.getElementById(this.CssIds_.POINTS).textContent = this.expData.points;
+		}
+	}, {
+		key: 'displayBonus',
+		value: function displayBonus(winner, volition) {
+			var _this13 = this;
+
+			var elem = document.getElementById(this.CssIds_.BONUS);
+			if (!volition) {
+				if (winner === 'human') {
+					if (this.bonusPoints > 0) {
+						elem.innerHTML = '<span class="tttoe__bonus-win">+' + Number.parseInt(this.bonusPoints) + '</span><span class="tttoe__bonus-msg">\u0411\u043E\u043D\u0443\u0441</span>';
+					} else {
+						return false;
+					}
+				} else {
+					if (this.bonusLosePoints > 0) {
+						elem.innerHTML = '<span class="tttoe__bonus-lose">-' + Number.parseInt(this.bonusLosePoints) + '</span><span class="tttoe__bonus-msg">\u041B\u0443\u0437</span>';
+					} else {
+						return false;
+					}
+				}
+			} else {
+				elem.innerHTML = '<span class="tttoe__bonus-volition">+' + volition + '</span><span class="tttoe__bonus-msg">\u0412\u043E\u043B\u044F</span>';
+			}
+			elem.parentNode.classList.toggle(this.CssClasses_.HIDDEN);
+			this.sound.play('swing');
+			this.animate(elem.parentNode, this.CssClasses_.FADEIN_LEFT, 0, false).then(function (result) {
+				setTimeout(function () {
+					_this13.sound.play('swing');
+					_this13.animate(elem.parentNode, _this13.CssClasses_.FADEIN_RIGHT, _this13.Constant_.ANIM_TIMING).then(function (result) {
+						elem.parentNode.classList.toggle(_this13.CssClasses_.HIDDEN);
+						elem.parentNode.classList.toggle(_this13.CssClasses_.FADEIN_LEFT);
+					});
+				}, _this13.Constant_.BONUS_TIMING);
+			});
+		}
+	}, {
+		key: 'displayCoins',
+		value: function displayCoins(randomCoin) {
+			var _this14 = this;
+
+			document.getElementById(this.CssIds_.COINS).textContent = this.coinsData.coins;
+			var coin = document.querySelectorAll('.' + this.CssClasses_.COIN)[randomCoin ? 1 : 0];
+			coin.classList.remove(this.CssClasses_.HIDDEN);
+			if (!randomCoin) {
+				this.animate(document.getElementById(this.CssIds_.POINTS), this.CssClasses_.FLASH, this.Constant_.ANIM_TIMING);
+			}
+			this.sound.play('coin');
+			return new Promise(function (resolve, reject) {
+				_this14.animate(coin, _this14.CssClasses_.FLIP, _this14.Constant_.ANIM_TIMING).then(function (result) {
+					coin.remove();
+					resolve();
+				});
+			});
+		}
+	}, {
+		key: 'displayLevel',
+		value: function displayLevel() {
+			var _this15 = this;
+
+			var anim = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+			var elem = document.getElementById(this.CssIds_.LVL).firstElementChild;
+			elem.textContent = this.level;
+			if (anim) {
+				setTimeout(function () {
+					_this15.animate(elem, _this15.CssClasses_.BOUNCE_IN, _this15.Constant_.ANIM_TIMING);
+				}, this.Constant_.SOUND_INTERVAL + 200);
+			}
+		}
+	}, {
+		key: 'displayVolition',
+		value: function displayVolition(anim, points) {
+			var _this16 = this;
+
+			var elem = document.getElementById(this.CssIds_.VOLITION);
+			elem.textContent = this.volitionData.value;
+			if (anim) {
+				this.sound.play('will');
+				elem.nextElementSibling.style.fill = this.Constant_.VOLITION_COLOR;
+				this.animate(elem.nextElementSibling, this.CssClasses_.RUBBER_BAND, this.Constant_.ANIM_TIMING).then(function (result) {
+					elem.nextElementSibling.style.fill = '#ffffff';
+					_this16.displayBonus(null, points);
+				});
 			}
 		}
 	}, {
 		key: 'restartMove',
 		value: function restartMove() {
-			var _this11 = this;
+			var _this17 = this;
 
 			return new Promise(function (resolve, reject) {
 				setTimeout(function () {
-					var fieldCells = Array.from(_this11.fieldCells);
+					var fieldCells = Array.from(_this17.fieldCells);
 
 					for (var i = 0; i < fieldCells.length; i++) {
 						fieldCells[i].ticked = false;
@@ -1435,28 +1755,36 @@ var Game = function () {
 							);
 						});
 						td.classList.remove(remClass);
-						var tick = td.querySelector('.' + _this11.CssClasses_.TICK);
+						var tick = td.querySelector('.' + _this17.CssClasses_.TICK);
 						tick && tick.remove();
 
-						_this11.count = 0;
-						_this11.state = '';
+						_this17.count = 0;
+						_this17.state = '';
 					}
 
+					var randomCoin = document.querySelector('.' + _this17.CssClasses_.FIELD).querySelector('.' + _this17.CssClasses_.COIN);
+					randomCoin && randomCoin.remove();
+					_this17.randomCoinData.added = false;
+					_this17.randomCoinData.index = -1;
+
+					_this17.appendRandomCoin();
+
 					resolve();
-				}, _this11.Constant_.RESTART_TIMING);
+				}, _this17.Constant_.RESTART_TIMING);
 			});
 		}
 	}, {
 		key: 'draw',
 		value: function draw() {
-			var _this12 = this;
+			var _this18 = this;
 
 			if (this.count === this.fieldSize) {
 				this.sound.play('draw');
 				this.displayMessage('draw');
 				this.switchPartiPlayer();
+				this.setVolition();
 				this.restartMove().then(function (result) {
-					_this12.makeMove();
+					_this18.makeMove();
 				});
 				return true;
 			}
@@ -1465,22 +1793,22 @@ var Game = function () {
 	}, {
 		key: 'computerMoveAnimation',
 		value: function computerMoveAnimation(id) {
-			var _this13 = this;
+			var _this19 = this;
 
 			return new Promise(function (resolve, reject) {
 				if (id >= 0) {
 					var cell = document.getElementById(id);
 					var cellCenter = cell.offsetWidth / 2;
-					var cursor = document.getElementById(_this13.CssIds_.CURSOR);
+					var cursor = document.getElementById(_this19.CssIds_.CURSOR);
 					var positionTop = cell.offsetTop + cellCenter - cursor.offsetTop - cursor.offsetHeight + 'px';
 					// const positionLeft = cell.offsetLeft + cellCenter - cursor.offsetLeft + 'px';
 					var positionLeft = cursor.offsetLeft - cell.offsetLeft - cellCenter + 'px';
 
-					cursor.classList.remove(_this13.CssClasses_.HIDDEN);
+					cursor.classList.remove(_this19.CssClasses_.HIDDEN);
 					cursor.style.top = positionTop;
 					cursor.style.right = positionLeft;
 					setTimeout(function () {
-						cursor.classList.add(_this13.CssClasses_.HIDDEN);
+						cursor.classList.add(_this19.CssClasses_.HIDDEN);
 						cursor.style.top = '';
 						cursor.style.right = '';
 						resolve();
@@ -1491,15 +1819,102 @@ var Game = function () {
 			});
 		}
 	}, {
+		key: 'gameMenuBarActions',
+		value: function gameMenuBarActions() {
+			var _this20 = this;
+
+			var menu = document.querySelector('.' + this.CssClasses_.MENU);
+			document.getElementById(this.CssIds_.BAR).addEventListener('click', function (e) {
+				var target = e.target;
+				var findBtn = target.closest('button');
+				if (findBtn) {
+					_this20.sound.play('click');
+					_this20.gameMenuToggle(menu);
+					_this20.animate(menu, _this20.CssClasses_.FADEIN_DEF, 0, false);
+					_this20.gameMenuActions(menu);
+				}
+			});
+			Array.from(document.getElementById(this.CssIds_.BAR).querySelectorAll('button')).forEach(function (elem) {
+				elem.addEventListener('mouseenter', function (e) {
+					_this20.sound.play('hover');
+				});
+			});
+			document.addEventListener('keyup', function (e) {
+				if (e.key === 'F10') {
+					if (!_this20.openMenu) {
+						document.getElementById(_this20.CssIds_.F10).closest('button').click();
+					}
+				}
+			});
+		}
+	}, {
+		key: 'gameMenuActions',
+		value: function gameMenuActions(menu) {
+			var h = handler.bind(this);
+			var h1 = handler1.bind(this);
+
+			function handler(e) {
+				var _this21 = this;
+
+				var target = e.target;
+				if (target.tagName === 'BUTTON') {
+					this.animate(menu, this.CssClasses_.FADE_OUT, this.Constant_.ANIM_TIMING).then(function (result) {
+						if (target.id === _this21.CssIds_.MAIN_MENU) {
+							_this21.restartGame();
+						}
+						_this21.animate(menu, _this21.CssClasses_.FADEIN_DEF);
+						_this21.gameMenuToggle(menu);
+					});
+					this.sound.play('click');
+					menu.removeEventListener('click', h);
+					menu.removeEventListener('mouseover', h1);
+				}
+			}
+			function handler1(e) {
+				if (e.target.tagName === 'BUTTON' && !e.target.classList.contains(this.CssClasses_.HIDDEN)) {
+					this.sound.play('hover');
+				}
+			}
+			menu.addEventListener('click', h);
+			menu.addEventListener('mouseover', h1);
+		}
+	}, {
+		key: 'gameMenuToggle',
+		value: function gameMenuToggle(elem) {
+			elem.classList.toggle(this.CssClasses_.HIDDEN);
+			this.openMenu = !this.openMenu;
+		}
+	}, {
+		key: 'restartGame',
+		value: function restartGame() {
+			var _this22 = this;
+
+			var container = document.getElementById(this.CssIds_.CONTAINER);
+			this.animate(container, this.CssClasses_.FADE_OUT, this.Constant_.ANIM_TIMING).then(function (result) {
+				container.classList.remove(_this22.CssClasses_.FADEIN_DEF);
+				container.classList.add(_this22.CssClasses_.HIDDEN);
+				container.remove();
+
+				var screen = new Screen();
+				screen.init();
+				screen.screen.classList.remove(_this22.CssClasses_.FADE_OUT);
+				screen.screen.classList.remove(_this22.CssClasses_.HIDDEN);
+
+				var fullscreen = new ToggleScreen();
+				fullscreen.close();
+			});
+		}
+	}, {
 		key: 'init',
 		value: function init() {
-			var _this14 = this;
+			var _this23 = this;
 
 			this.countAxesValues();
 			this.makeFieldCells();
 			return new Promise(function (resolve, reject) {
-				_this14.makeView().then(function (result) {
-					return resolve();
+				_this23.makeView().then(function (result) {
+					_this23.gameMenuBarActions();
+					resolve();
 				});
 			});
 		}
@@ -1512,6 +1927,26 @@ var Game = function () {
 		key: 'playerSecondName',
 		get: function get() {
 			return this.names[this.players.player2];
+		}
+	}, {
+		key: 'losePoints',
+		get: function get() {
+			return Number.parseInt(this.expData.winPointsGame * this.expData.losePercent / 100);
+		}
+	}, {
+		key: 'bonusPoints',
+		get: function get() {
+			return this.expData.partiPoints * this.levelGrow.bonusPercent / 100;
+		}
+	}, {
+		key: 'bonusLosePoints',
+		get: function get() {
+			return this.expData.partiPoints * this.levelGrow.bonusLosePercent / 100;
+		}
+	}, {
+		key: 'gameWinPoints',
+		get: function get() {
+			return this.expData.points - this.expData.currentLevelExp;
 		}
 	}]);
 

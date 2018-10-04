@@ -1,0 +1,29 @@
+/**
+ *
+ * sound
+ *
+ */
+
+.sound {
+	&__toggle {
+		position: absolute;
+		z-index: 3;
+		bottom: 20px;
+		left: 30px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		padding: 0;
+		transform: rotate(-5deg);
+		border-radius: 100px;
+		&:active {
+			position: absolute;
+			top: auto;
+			transform: scale(1) !important;
+			box-shadow: none;
+		}
+		svg.is-hidden {
+			display: none;
+		}
+	}
+}
