@@ -1,0 +1,68 @@
+/**
+ *
+ * button
+ *
+ */
+
+button {
+	font-size: $btn-font-size;
+	font-family: $btn-font-family;
+	display: block;
+	min-width: $btn-min-width;
+	margin: 7px auto;
+	padding: 15px 20px;
+	outline: 0;
+	border: 0;
+	border-radius: $btn-border-radius;
+	cursor: $cursor-default;
+	user-select: none;
+	color: white;
+	box-shadow: 2px 2px 0 white;
+	background-color: $btn-bg-color;
+	&:hover:not(:disabled) {
+		transform: scale(1.05);
+	}
+	&:active {
+		position: relative;
+		top: 5px;
+	}
+	&:disabled {
+		color: $btn-disabled-color;
+		box-shadow: none;
+		background-color: $btn-disabled-bg-color;
+		&:active {
+			top: 0;
+		}
+	}
+}
+
+button.ml-button--fab {
+	font-size: 3.3rem;
+	line-height: 60px;
+	box-sizing: border-box;
+	width: 100px;
+	height: 100px;
+	min-width: 100px;
+	margin: 5px;
+	padding: 0;
+	border-radius: 10px;
+	border: 7px solid nth($purple, 1);
+	color: nth($purple, 1);
+	background-color: transparent;
+}
+
+.ml-button--dim {
+	font-size: 100%;
+	line-height: 1.4;
+	width: auto;
+	height: auto;
+	min-width: auto;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	background-color: transparent;
+}
+
+.ml-button--color {
+	background-color: $btn-ml-bg-color;
+}

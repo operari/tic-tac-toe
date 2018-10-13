@@ -1,12 +1,16 @@
+const test = false;
+
 class Game {
 	constructor(options) {
 		this.fieldSize = 9;
-		this.run = 'computer';
+		this.run = 'human';
 		this.mode = 'vs_computer';
 		this.parti = 3;
 		this.difficulty = 'hard';
 		this.store = {};
 		this.openMenu = false;
+		this.openChips = false;
+		this.animateChips = true;
 		this.players = {
 			player1: 'human',
 			player2: 'computer'
@@ -55,7 +59,7 @@ class Game {
 			increasePercent: 10
 		};
 		this.randomCoinData = {
-			chancePercent: 40,
+			chancePercent: 30,
 			added: false,
 			index: -1
 		};
@@ -63,11 +67,121 @@ class Game {
 			value: this.coinsData.getExpInterval,
 			writable: true
 		} );
+		this.score = {
+			0: {
+				name: 'star',
+				cost: 5,
+				side: 'x',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			1: {
+				name: 'heart',
+				cost: 6,
+				side: 'o',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			2: {
+				name: 'paw',
+				cost: 11,
+				side: 'x',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			3: {
+				name: 'cloud',
+				cost: 10,
+				side: 'o',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			4: {
+				name: 'snowflake',
+				cost: 15,
+				side: 'x',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			5: {
+				name: 'flush',
+				cost: 16,
+				side: 'o',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			6: {
+				name: 'cake',
+				cost: 21,
+				side: 'x',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			7: {
+				name: 'bomb',
+				cost: 20,
+				side: 'o',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			8: {
+				name: 'plane',
+				cost: 25,
+				side: 'x',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			9: {
+				name: 'basketball',
+				cost: 26,
+				side: 'o',
+				paid: false,
+				pick: false,
+				lock: true
+			},
+			length: 10
+		};
+		this.statistics = {
+			data: [
+				{
+					name: 'Саша',
+					volition: 50,
+					coins: 100,
+					chip: 'star',
+					level: 5
+				},
+				{
+					name: 'Виктор',
+					volition: 30,
+					coins: 70,
+					chip: 'heart',
+					level: 3
+				}
+			],
+			fields: {
+				ru: ['Ник', 'Воля', 'Монеты', 'Фишка', 'Уровень']
+			},
+			limit: 10
+		};
 		this.__proto__.CssClasses_ = {
 			FIELD: 'tttoe',
 			CELL: 'tttoe__cell',
 			TICK: 'tttoe__tick',
 			STORE: 'tttoe__store',
+			CHIP: 'tttoe__chip',
+			CHIPS_FOOT: 'tttoe__chip-footer',
+			CHIP_PAID: 'tttoe__chip-paid',
+			CHIPS: 'tttoe__chips',
+			CHIP_PICK: 'tttoe__chip--pick',
 			WIN: 'tttoe__cell--winner',
 			HIDDEN: 'is-hidden',
 			FADEIN_DEF: 'fadeInDef',
@@ -81,8 +195,20 @@ class Game {
 			FLIP: 'flip',
 			FLASH: 'flash',
 			BOUNCE_IN: 'bounceIn',
+			BOUNCE_IN_UP: 'bounceInUp',
+			BOUNCE_OUT_UP: 'bounceOutUp',
+			BOUNCE_IN_DOWN: 'bounceInDown',
+			BOUNCE_OUT_DOWN: 'bounceOutDown',
+			TADA: 'tada',
 			COIN: 'tttoe__coin',
-			RUBBER_BAND: 'rubberBand'
+			RUBBER_BAND: 'rubberBand',
+			BUTTON_ACT: 'tttoe__button-action',
+			LOCK: 'tttoe__chip-lock',
+			UNLOCK_CHIPS: 'tttoe__chips-unlock',
+			ANIM: 'animated',
+			CONFETTI_STATIC: 'tttoe__chips-confetti',
+			STATISTICS: 'tttoe__statistics',
+			ABOUT: 'tttoe__about'
 		};
 		this.__proto__.CssIds_ = {
 			APP: 'game',
@@ -91,9 +217,13 @@ class Game {
 			CONTAINER: 'container',
 			MSG: 'message',
 			BAR: 'menu_bar',
+			CHIPS_BAR: 'chips_bar',
 			RESUME: 'resume',
 			MAIN_MENU: 'main_menu',
-			F10: 'f10',
+			HOTKEYS: {
+				'f10': 'menu',
+				'f': 'chips'
+			},
 			LVL: 'level',
 			POINTS: 'points',
 			EXP: 'experience',
@@ -103,16 +233,22 @@ class Game {
 			VOLITION: 'volition'
 		};
 		this.__proto__.Constant_ = {
-			RESTART_TIMING: 2000,
+			SHAKE_TIMING: 2000,
 			CONFETTI_TIMING: 2000,
 			TICK_TIMING: 500,
 			MSG_ANIM_TIMING: 1500,
 			ANIM_TIMING: 1000,
 			BONUS_TIMING: 2000,
 			SOUND_INTERVAL: 500,
+			RESTART_PARTI: 1000,
 			NEXT_LVL_TXT: 'След. ур.: ',
 			WILL: 'Воля',
-			VOLITION_COLOR: '#545bb0'
+			VOLITION_COLOR: '#545bb0',
+			TEXTS: {
+				NEW_CHIP: {
+					RU: 'Новая фишка!'
+				}
+			}
 		};
 		Object.assign( this, options );
 		this.partiRun = this.run;
@@ -179,7 +315,7 @@ class Game {
 		}
 
 		if (axis === 'y') {
-			arr = arr.slice( 0 ).sort( (a, b) => a % sqrt - b % sqrt );
+			arr = arr.slice( 0 ).sort( (a,b) => a % sqrt - b % sqrt );
 		}
 
 		for (let i = 1; i <= arr.length; i++) {
@@ -193,11 +329,11 @@ class Game {
 		return matrix;
 	}
 
-	computeCells(matrix, mult = true) {
+	computeCells(matrix,mult = true) {
 		matrix.forEach( function(v,i,arr) {
 			let row = [];
 			(function rec(arr) {
-				arr.reduce(function(a,b,i,arr) {
+				arr.reduce( function(a,b,i,arr) {
 
 					if (arr.length > 1) {
 						row.push( mult ? a * b : a + b );
@@ -209,7 +345,7 @@ class Game {
 					}
 
 					return a;
-				});
+				} );
 			})( v );
 			arr[i] = row;
 		} );
@@ -217,7 +353,7 @@ class Game {
 
 	sumAxissRows(matrix) {
 		return matrix.map( function(arr) {
-			const sum = arr.reduce( (a, b) => a + b ),
+			const sum = arr.reduce( (a,b) => a + b ),
 				o = {};
 			o[sum] = [];
 
@@ -248,7 +384,7 @@ class Game {
 				cell.className = this.CssClasses_.CELL;
 				cell.id = sqrt * i + n;
 
-				let inner = document.createElement('div');
+				let inner = document.createElement( 'div' );
 				inner.className = this.CssClasses_.FIELD + '__inner';
 
 				cell.appendChild( inner );
@@ -289,6 +425,7 @@ class Game {
 	}
 
 	makeView() {
+		this.pagination = new Pagination( this.statistics.data.length, this.statistics.limit );
 		const html = `
 			<div id="container" class="layout__container is-hidden animated">
 				<div id="game" class="layout__game">
@@ -298,11 +435,19 @@ class Game {
 								<div class="tttoe__coin animated"></div>
 								<div id="${this.CssIds_.COINS}" class="tttoe__coins-count">${this.coinsData.coins}</div>
 							</div>
-							<div id="menu_bar" class="tttoe__menu-bar">
-								<button class="ml-button--dim">
-									<svg class="tttoe__menu-bar-ico" xmlns="http://www.w3.org/2000/svg" width="42" height="43" fill="#585f80" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-									<span id="f10" class="tttoe__menu-bar-key">f10</span>
-								</button>
+							<div class="row">
+								<div id="chips_bar" class="tttoe__chips-bar">
+									<button class="tttoe__button-action ml-button--dim" data-popup="${this.CssClasses_.CHIPS}">
+										<div class="tttoe__chips-bar-ico"></div>
+										<div id="f" class="tttoe__key">f</div>
+									</button>
+								</div>
+								<div id="menu_bar" class="tttoe__menu-bar">
+									<button class="tttoe__button-action ml-button--dim" data-popup="${this.CssClasses_.MENU}">
+										<div class="tttoe__menu-bar-ico"></div>
+										<div id="f10" class="tttoe__key">f10</div>
+									</button>
+								</div>
 							</div>
 						</div>
 						<div id="status" class="tttoe__status row">
@@ -343,15 +488,52 @@ class Game {
 						</div>
 					</div>
 					<div class="layout__popups">
-						<div id="message" class="tttoe__message animated animated--msg"></div>
-						<div class="tttoe__menu animated is-hidden">
-							<div class="game-menu">
-								<button id="${this.CssIds_.RESUME}" class="game-menu__action bg-color--blue">Вернуться</button>
-								<button class="game-menu__action bg-color--pink">Статистика</button>
-								<button class="game-menu__action bg-color--gold">Об игре</button>
-								<button id="${this.CssIds_.MAIN_MENU}" class="game-menu__action bg-color--purple">Главное меню</button>
+						<div class="tttoe__chips layout__substrate animated is-hidden" data-flag="openChips">
+							<div class="tttoe__chips-inner layout__popup">
+								<h3>Магазин</h3>
+								<div class="row row--left">
+									${this.fillScore()}
+								</div>
+								<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>
 							</div>
 						</div>
+						<div class="tttoe__statistics layout__substrate animated is-hidden">
+							<div class="tttoe__statistics-inner layout__popup">
+								<h3>Статистика</h3>
+								<div class="row row--left">
+									${this.fillStatistics()}
+									${this.pagination.create()}
+								</div>
+								<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>
+							</div>
+						</div>
+						<div class="tttoe__about layout__substrate animated is-hidden">
+							<div class="tttoe__about-inner layout__popup">
+								<h3>Об игре</h3>
+								<p class="tttoe__about-text">Крестики-нолики - игра нашего детства.
+								Играйте против компьютера, друга или по сети.
+								Получайте опыт, прокачивайте уровень и разблокируйте эпичные фишки в магазине.
+								</p>
+								<div class="tttoe__affiliate"></div>
+								<p><b>Разработчик</b><br>Александр Радевич</p>
+								<p><a href="http://operari.by" target="_blank">OPERARI</a></p>
+								<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>
+							</div>
+						</div>
+						<div class="tttoe__menu layout__substrate animated is-hidden" data-flag="openMenu">
+							<div class="game-menu">
+								<button id="${this.CssIds_.RESUME}" class="game-menu__action tttoe__button-action bg-color--blue">Вернуться</button>
+								<button class="game-menu__action tttoe__button-action bg-color--pink" data-popup="${this.CssClasses_.STATISTICS}">Статистика</button>
+								<button class="game-menu__action tttoe__button-action bg-color--gold" data-popup="${this.CssClasses_.ABOUT}">Об игре</button>
+								<button id="${this.CssIds_.MAIN_MENU}" class="game-menu__action tttoe__button-action bg-color--purple">Главное меню</button>
+							</div>
+						</div>
+						<div class="tttoe__chips-unlock is-hidden">
+							<div class="tttoe__chips-confetti animated">
+								<img src="blocks/game/confetti.png" alt="" />
+							</div>
+						</div>
+						<div id="message" class="tttoe__message animated animated--msg"></div>
 						<div class="tttoe__bonus animated is-hidden"><div id="bonus"></div></div>
 					</div>
 				</div>
@@ -370,13 +552,11 @@ class Game {
 				this.showView();
 				resolve();
 			}
-
 			if (document.readyState === 'complete') {
 				handler();
 			} else {
 				document.addEventListener( 'DOMContentLoaded', handler );
 			}
-
 		} );
 	}
 
@@ -386,8 +566,68 @@ class Game {
 		container.classList.toggle( this.CssClasses_.FADEIN_DEF );
 	}
 
+	fillScore() {
+		let html = '';
+
+		for (let i = 0; i < this.score.length; i++) {
+			const elem = this.score[i];
+			const chip =
+				`<button class="tttoe__chip tttoe__button-action ml-button--dim" data-index="${i}" ${elem.lock ? 'disabled' : ''}>
+					<div class="tttoe__chip-ico tttoe__${elem.name}"></div>
+					<div class="tttoe__chip-footer">
+						<span class="tttoe__coin tttoe__coin--mini animated"></span>
+						<span class="tttoe__chip-cost">${elem.cost}</span>
+					</div>
+					${elem.lock ? '<div class="tttoe__chip-lock"><div></div></div>': ''}
+					<div class="tttoe__chip-side">${elem.side}</div>
+				</button>`;
+			html += chip;
+		}
+
+		return html;
+
+	}
+
+	fillStatistics() {
+		const table = document.createElement( 'table' );
+
+		var appendRow = () => {
+			const row = document.createElement( 'tr' );
+			table.appendChild( row );
+			return row;
+		};
+		const row = appendRow();
+
+		for (let i = 0; i < this.statistics.fields.ru.length; i++) {
+			const headCell = document.createElement( 'th' );
+			headCell.textContent = this.statistics.fields.ru[i];
+			row.appendChild( headCell );
+		}
+
+		for (let i = 0; i < this.statistics.data.length; i++) {
+			if (i + 1 > this.statistics.limit) {
+				break;
+			}
+			const o = this.statistics.data[i];
+			const row = appendRow();
+			for (let prop in o) {
+				const cell = document.createElement( 'td' );
+				if (prop === 'chip') {
+					cell.innerHTML = `<div class="tttoe__chip-ico tttoe__chip-ico--mini tttoe__${o[prop]}"></div>`;
+				} else {
+					cell.textContent = o[prop];
+				}
+				row.appendChild( cell );
+			}
+
+
+		}
+
+		return table.outerHTML;
+	}
+
 	makeMove() {
-		switch(this.mode) {
+		switch (this.mode) {
 			case 'vs_human':
 				if (this.run === 'human') {
 					this.doHuman( this.players.player1, this.players.player2 );
@@ -411,7 +651,7 @@ class Game {
 		const props = Object.keys( this.players );
 		const values = Object.values( this.players );
 
-		var highlight = (id, add = true) => {
+		var highlight = (id,add = true) => {
 			const elem = document.getElementById( id ).querySelector( '.' + this.CssClasses_.AVATAR );
 			elem.classList[add ? 'add' : 'remove']( this.CssClasses_.AVATAR + '--highlight' );
 		};
@@ -425,20 +665,30 @@ class Game {
 	}
 
 	actionsAfterWin(comb,axis) {
-		this.setStore();
-		this.setPoints( this.run );
-		this.displayWinner( comb, axis );
-		this.switchPartiPlayer();
-		const winnerName = this.getPartiWinner();
-		this.displayMessage( winnerName );
-		if (winnerName) {
-			this.setPoints( winnerName, true );
-			const loserName = this.getPartiLoser( winnerName );
-			const winnerId = this.getPlayerId( winnerName );
-			const loserId = this.getPlayerId( loserName );
-			this.throwConfetti( document.getElementById( winnerId ), this.Constant_.CONFETTI_TIMING );
-			this.animate( document.getElementById( loserId ).querySelector( '.' + this.CssClasses_.AVATAR ), this.CssClasses_.SHAKE, this.Constant_.RESTART_TIMING );
-		}
+		return new Promise( (resolve,reject) => {
+			this.setStore();
+			this.setPoints( this.run );
+			this.displayWinner( comb, axis );
+			this.switchPartiPlayer();
+			const winnerName = this.getGameWinner();
+			if (winnerName) {
+				this.displayMessage( winnerName );
+				const loserName = this.getPartiLoser( winnerName );
+				const winnerId = this.getPlayerId( winnerName );
+				const loserId = this.getPlayerId( loserName );
+				this.throwConfetti( document.getElementById( winnerId ), this.Constant_.CONFETTI_TIMING );
+				this.animate( document.getElementById( loserId ).querySelector( '.' + this.CssClasses_.AVATAR ), this.CssClasses_.SHAKE, this.Constant_.SHAK_TIMING );
+				this.setPoints( winnerName, true )
+					.then(
+						result => {
+							this.resetStores();
+							resolve();
+						}
+					);
+			} else {
+				setTimeout( () => resolve(), this.Constant_.RESTART_PARTI );
+			}
+		} );
 	}
 
 	doHuman(curr,next) {
@@ -448,7 +698,7 @@ class Game {
 
 		function handler(e) {
 			const target = e.target;
-			const td = target.closest('td');
+			const td = target.closest( 'td' );
 
 			if (target.tagName === 'DIV' && td) {
 				const indx = td.id;
@@ -458,11 +708,15 @@ class Game {
 
 					const winnerComb = this.checkWinnerCombination( false, curr );
 					if (winnerComb) {
-						this.actionsAfterWin( winnerComb.comb, winnerComb.axis );
-						this.restartMove()
+						this.actionsAfterWin( winnerComb.comb, winnerComb.axis )
 							.then(
 								result => {
-									this.makeMove();
+									this.restartParti()
+										.then(
+											result => {
+												this.makeMove();
+											}
+										);
 								}
 							);
 					} else {
@@ -474,8 +728,7 @@ class Game {
 						this.run = next;
 
 						if (this.randomCoinData.added && indx == this.randomCoinData.index) {
-							this.coinsData.coins += 1;
-							this.displayCoins( true )
+							this.setCoins( 1, true )
 								.then(
 									result => {
 										this.makeMove();
@@ -510,13 +763,17 @@ class Game {
 					this.state = this.count === this.fieldSize && this.state !== 'win' ? 'draw' : this.state;
 					if (this.state === 'win') {
 						if (ticked) {
-							this.actionsAfterWin( result.comb, result.axis );
-							this.restartMove()
+							this.actionsAfterWin( result.comb, result.axis )
 								.then(
 									result => {
-										this.makeMove();
+										this.restartParti()
+											.then(
+												result => {
+													this.makeMove();
+												}
+											);
 									}
-								);
+								)
 						}
 					} else if (this.state === 'draw') {
 						this.count = this.fieldSize;
@@ -533,7 +790,7 @@ class Game {
 			);
 	}
 
-	tick(n, type, tick = true) {
+	tick(n,type,tick = true) {
 		if (this.fieldCells[n] && !this.fieldCells[n].ticked) {
 			this.fieldCells[n].ticked = true;
 			this.fieldCells[n].tickType = type;
@@ -599,10 +856,10 @@ class Game {
 			do {
 				n = this.getRandomInt( 0, this.fieldSize );
 				ticked = this.isTickedCell( n );
-			} while(ticked === true);
+			} while (ticked === true);
 			result.cell = n + 1;
 		} else {
-			const o =  this.filterCells();
+			const o = this.filterCells();
 			const resultCompareComputer = this.makePotentialCells( o.emptyCells, o.computerCells, 'computer' );
 			const resultCompareHuman = this.makePotentialCells( o.emptyCells, o.humanCells, 'human' );
 
@@ -714,7 +971,7 @@ class Game {
 		return false;
 	}
 
-	doTestTick(cell, player, test = true) {
+	doTestTick(cell,player,test=true) {
 		const n = cell - 1;
 
 		if (test) {
@@ -746,7 +1003,7 @@ class Game {
 	}
 
 	makeRotateAxisClass(str,arr) {
-		str = str === 'z' && arr.some( v => v === 3 ) ?  str + '-45' : str
+		str = str === 'z' && arr.some( v => v === 3 ) ? str + '-45' : str
 		return str;
 	}
 
@@ -762,7 +1019,7 @@ class Game {
 	}
 
 	setStore() {
-		typeof( this.store[this.run] ) === 'number' ? this.store[this.run] += 1 : this.store[this.run] = 1;
+		typeof( this.store[this.run] ) === 'number' ? this.store[this.run] += 1: this.store[this.run] = 1;
 		this.displayStore();
 	}
 
@@ -774,10 +1031,17 @@ class Game {
 			} else {
 				this.expData.points = winner === 'human' ? this.expData.points + this.bonusPoints : this.expData.points - this.bonusLosePoints;
 				this.expData.points = Number.parseInt( this.expData.points );
-				setTimeout( () => {
-					this.displayBonus( winner );
-					this.expData.partiPoints = 0;
-				}, this.Constant_.MSG_ANIM_TIMING );
+				return new Promise( (resolve,reject) => {
+					setTimeout( () => {
+						this.displayBonus( winner )
+							.then(
+								result => {
+									resolve();
+								}
+							);
+						this.expData.partiPoints = 0;
+					}, this.Constant_.MSG_ANIM_TIMING );
+				} );
 			}
 			if (this.gameWinPoints > 0) {
 				this.levelUp();
@@ -802,13 +1066,57 @@ class Game {
 		}
 	}
 
-	setCoins() {
-		if (this.expData.points >= this.coinsData.needExp) {
-			this.coinsData.coins += this.coinsData.getCoins;
-			this.coinsData.thresholdExp += this.coinsData.getExpInterval;
-			this.coinsData.needExp += this.coinsData.getExpInterval;
-			this.displayCoins();
+	setCoins(force,randomCoin,sound) {
+		if (!force) {
+			if (this.expData.points >= this.coinsData.needExp) {
+				this.coinsData.coins += this.coinsData.getCoins;
+				this.coinsData.thresholdExp += this.coinsData.getExpInterval;
+				this.coinsData.needExp += this.coinsData.getExpInterval;
+				this.displayCoins();
+				this.unlockChips();
+			}
+		} else {
+			this.coinsData.coins += force;
+			return new Promise( (resolve,reject) => {
+				this.displayCoins(randomCoin, false, sound)
+					.then(
+						result => {
+							this.unlockChips();
+							resolve();
+						}
+					);
+			} );
 		}
+	}
+
+	unlockChips() {
+		const chips = Array.from( this.score ).filter( o => o.cost <= this.coinsData.coins && o.lock );
+		const chipsIcons = [];
+
+		if (chips.length) {
+			chips.forEach( o => {
+				o.lock = false;
+				const chipIco = document.querySelector( `.${this.CssClasses_.FIELD}__${o.name}` );
+				const parent = chipIco.parentNode;
+				parent.disabled = false;
+				parent.querySelector( '.' + this.CssClasses_.LOCK ).remove();
+				chipsIcons.push( chipIco );
+			} );
+		}
+
+		if (this.animateChips) {
+			let i = 0;
+			(function rec(arr,n) {
+				if (n === arr.length) return;
+				this.displayUnlockChip( arr[n] )
+					.then(
+						result => {
+							return rec.call( this, arr, ++n );
+						}
+					);
+			}).call( this, chipsIcons, i );
+		}
+
 	}
 
 	setVolition() {
@@ -830,7 +1138,7 @@ class Game {
 	levelUp() {
 		if (this.expData.points >= this.expData.nextLevelExp) {
 			this.level++
-			this.expData.currentLevelExp = this.expData.nextLevelExp;
+				this.expData.currentLevelExp = this.expData.nextLevelExp;
 			this.setNextLevelExp();
 			setTimeout( () => {
 				this.sound.play( 'level' );
@@ -867,7 +1175,7 @@ class Game {
 
 	}
 
-	getPartiWinner() {
+	getGameWinner() {
 		const stores = Object.values( this.store );
 		const sum = stores.reduce( (a,b) => a + b );
 		if (sum === this.parti) {
@@ -876,10 +1184,6 @@ class Game {
 			let i = stores.findIndex( v => v === n );
 			const winner = Object.keys( this.store )[i];
 			const prop = this.getPlayerId( winner );
-
-			setTimeout( () => {
-				this.resetStores();
-			}, this.Constant_.RESTART_TIMING );
 
 			return winner;
 		} else {
@@ -909,7 +1213,7 @@ class Game {
 		this.run = this.partiRun = playersNames.find( v => v !== this.partiRun );
 	}
 
-	animate(el,cls,timing=0,del=true) {
+	animate(el,cls,timing = 0,del = true) {
 		if (el) {
 			el.classList.add( cls );
 			return new Promise( (resolve,reject) => {
@@ -941,9 +1245,23 @@ class Game {
 		return Math.floor( Math.random() * (max - min) ) + min;
 	}
 
+	getSoundInterval(name,add = 10) {
+		return (this.sound.timings[name].end - this.sound.timings[name].start) * 1e3 + add;
+	}
+
+	getClassPickedChip(side) {
+		if (this.run !== 'computer') {
+			const chip = Array.from( this.score ).find( o => o.pick && o.side === this.transSymbolTextSide( side ) );
+			if (chip) {
+				return ` ${this.CssClasses_.FIELD}__${chip.name}`;
+			}
+		}
+		return '';
+	}
+
 	resetStores() {
 		this.store = {};
-		const stores = document.querySelectorAll( '.' + this.CssClasses_.STORE  );
+		const stores = document.querySelectorAll( '.' + this.CssClasses_.STORE );
 
 		for (let i = 0; i < stores.length; i++) {
 			stores[i].textContent = 0;
@@ -962,8 +1280,8 @@ class Game {
 	}
 
 	displayTick(n,type) {
-		let tick = document.createElement('div');
-		tick.className = 'tttoe__tick tttoe__tick--' + this.tickType[this.run];
+		let tick = document.createElement( 'div' );
+		tick.className = `${this.CssClasses_.TICK} ${this.CssClasses_.TICK}--${this.tickType[this.run]}${this.getClassPickedChip( type )}`;
 		this.fieldElement.querySelectorAll( 'td' )[n].firstElementChild.appendChild( tick );
 	}
 
@@ -980,7 +1298,7 @@ class Game {
 			elem.classList.add( this.CssClasses_.MSG );
 			let msg = 'Выиграл';
 
-			switch(str) {
+			switch (str) {
 				case 'human':
 					msg += this.playerFirstName === 'Вы' ? 'и ' + this.playerFirstName : ' ' + this.playerFirstName;
 					break;
@@ -1003,61 +1321,66 @@ class Game {
 	displayExperience() {
 		const needLvlExp = this.expData.nextLevelExp - this.expData.currentLevelExp;
 		const elem = document.getElementById( this.CssIds_.EXP );
-		elem.firstElementChild.style.width =  Number.parseInt( this.gameWinPoints / needLvlExp * 100 ) + '%';
+		elem.firstElementChild.style.width = Number.parseInt( this.gameWinPoints / needLvlExp * 100 ) + '%';
 		document.getElementById( this.CssIds_.POINTS ).textContent = this.expData.points;
 	}
 
 	displayBonus(winner,volition) {
-		const elem  = document.getElementById( this.CssIds_.BONUS );
-		if (!volition) {
-			if (winner === 'human') {
-				if (this.bonusPoints > 0) {
-					elem.innerHTML = `<span class="tttoe__bonus-win">+${Number.parseInt( this.bonusPoints )}</span><span class="tttoe__bonus-msg">Бонус</span>`;
+		return new Promise( (resolve,reject) => {
+			const elem = document.getElementById( this.CssIds_.BONUS );
+			if (!volition) {
+				if (winner === 'human') {
+					if (this.bonusPoints > 0) {
+						elem.innerHTML = `<span class="tttoe__bonus-win">+${Number.parseInt( this.bonusPoints )}</span><span class="tttoe__bonus-msg">Бонус</span>`;
+					} else {
+						return resolve();
+					}
 				} else {
-					return false;
+					if (this.bonusLosePoints > 0) {
+						elem.innerHTML = `<span class="tttoe__bonus-lose">-${Number.parseInt( this.bonusLosePoints )}</span><span class="tttoe__bonus-msg">Луз</span>`;
+					} else {
+						return resolve();
+					}
 				}
 			} else {
-				if (this.bonusLosePoints > 0) {
-					elem.innerHTML = `<span class="tttoe__bonus-lose">-${Number.parseInt( this.bonusLosePoints )}</span><span class="tttoe__bonus-msg">Луз</span>`;
-				} else {
-					return false;
-				}
+				elem.innerHTML = `<span class="tttoe__bonus-volition">+${volition}</span><span class="tttoe__bonus-msg">Воля</span>`;
 			}
-		} else {
-			elem.innerHTML = `<span class="tttoe__bonus-volition">+${volition}</span><span class="tttoe__bonus-msg">Воля</span>`;
-		}
-		elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
-		this.sound.play( 'swing' );
-		this.animate( elem.parentNode, this.CssClasses_.FADEIN_LEFT, 0, false )
-			.then(
-				result => {
-					setTimeout( () => {
-						this.sound.play( 'swing' );
-						this.animate( elem.parentNode, this.CssClasses_.FADEIN_RIGHT, this.Constant_.ANIM_TIMING )
-							.then(
-								result => {
-									elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
-									elem.parentNode.classList.toggle( this.CssClasses_.FADEIN_LEFT );
-								}
-							);
-					}, this.Constant_.BONUS_TIMING );
-				}
-			);
+			elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
+			this.sound.play( 'swing' );
+			this.animate( elem.parentNode, this.CssClasses_.FADEIN_LEFT, 0, false )
+				.then(
+					result => {
+						setTimeout( () => {
+							this.sound.play( 'swing' );
+							this.animate( elem.parentNode, this.CssClasses_.FADEIN_RIGHT, this.Constant_.ANIM_TIMING )
+								.then(
+									result => {
+										elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
+										elem.parentNode.classList.toggle( this.CssClasses_.FADEIN_LEFT );
+									}
+								);
+							resolve();
+						}, this.Constant_.BONUS_TIMING );
+					}
+				);
+		} );
 	}
 
-	displayCoins(randomCoin) {
+	displayCoins(randomCoin,animPoints = true,sound = true) {
 		document.getElementById( this.CssIds_.COINS ).textContent = this.coinsData.coins;
-		const coin = document.querySelectorAll('.' + this.CssClasses_.COIN )[randomCoin ? 1 : 0];
+		const coin = document.querySelectorAll( '.' + this.CssClasses_.COIN )[randomCoin ? 1 : 0];
 		coin.classList.remove( this.CssClasses_.HIDDEN );
-		if (!randomCoin) {
+		if (animPoints) {
 			this.animate( document.getElementById( this.CssIds_.POINTS ), this.CssClasses_.FLASH, this.Constant_.ANIM_TIMING );
 		}
-		this.sound.play( 'coin' );
+		if (sound) {
+			this.sound.play( 'coin' );
+		}
 		return new Promise( (resolve,reject) => {
 			this.animate( coin, this.CssClasses_.FLIP, this.Constant_.ANIM_TIMING )
 				.then(
 					result => {
-						coin.remove();
+						randomCoin && coin.remove();
 						resolve();
 					}
 				);
@@ -1090,35 +1413,112 @@ class Game {
 		}
 	}
 
-	restartMove() {
+	displayUnlockChip(elem) {
 		return new Promise( (resolve,reject) => {
-			setTimeout( () => {
-				const fieldCells = Array.from( this.fieldCells );
+			const wrp = document.querySelector( '.' + this.CssClasses_.UNLOCK_CHIPS );
+			const confetti = wrp.querySelector( '.' + this.CssClasses_.CONFETTI_STATIC );
+			const btnAct = document.querySelector( '.' + this.CssClasses_.BUTTON_ACT );
+			const clone = elem.cloneNode();
+			clone.classList.add( this.CssClasses_.ANIM );
+			const span = document.createElement( 'span' );
+			span.textContent = this.Constant_.TEXTS.NEW_CHIP.RU;
+			span.className = this.CssClasses_.ANIM;
+			clone.appendChild( span );
+			wrp.appendChild( clone );
 
-				for (let i = 0; i < fieldCells.length; i++) {
-					fieldCells[i].ticked = false;
-					fieldCells[i].tickType = '';
-
-					const td = document.getElementById( i );
-					const remClass = Array.from( td.classList ).find( v => /winner/.test( v ) );
-					td.classList.remove( remClass );
-					const tick = td.querySelector( '.' + this.CssClasses_.TICK );
-					tick && tick.remove();
-
-					this.count = 0;
-					this.state = '';
-				}
-
-				const randomCoin = document.querySelector( '.' + this.CssClasses_.FIELD ).querySelector( '.' + this.CssClasses_.COIN );
-				randomCoin && randomCoin.remove();
-				this.randomCoinData.added = false;
-				this.randomCoinData.index = -1;
-
-				this.appendRandomCoin();
-
-				resolve();
-			}, this.Constant_.RESTART_TIMING );
+			this.sound.play( 'swing' );
+			btnAct.disabled = true;
+			wrp.classList.toggle( this.CssClasses_.HIDDEN );
+			this.animate( confetti, this.CssClasses_.BOUNCE_IN_DOWN, this.Constant_.ANIM_TIMING, false );
+			this.animate( clone, this.CssClasses_.BOUNCE_IN_UP, this.Constant_.ANIM_TIMING, false )
+				.then(
+					result => {
+						this.animate( span, this.CssClasses_.TADA, 0, false );
+						this.sound.play( 'tada' )
+							.then(
+								result => {
+									this.sound.play( 'swing' );
+									this.animate( confetti, this.CssClasses_.BOUNCE_OUT_DOWN, this.Constant_.ANIM_TIMING )
+										.then(
+											result => {
+												confetti.classList.remove( this.CssClasses_.BOUNCE_IN_DOWN );
+											}
+										);
+									this.animate( clone, this.CssClasses_.BOUNCE_OUT_UP, this.Constant_.ANIM_TIMING )
+										.then(
+											result => {
+												clone.remove();
+												btnAct.disabled = false;
+												wrp.classList.toggle( this.CssClasses_.HIDDEN );
+												resolve();
+											}
+										);
+								}
+							);
+					}
+				);
 		} );
+	}
+
+	restartParti() {
+		return new Promise( (resolve,reject) => {
+			const fieldCells = Array.from( this.fieldCells );
+
+			for (let i = 0; i < fieldCells.length; i++) {
+				fieldCells[i].ticked = false;
+				fieldCells[i].tickType = '';
+
+				const td = document.getElementById( i );
+				const remClass = Array.from( td.classList ).find( v => /winner/.test( v ) );
+				td.classList.remove( remClass );
+				const tick = td.querySelector( '.' + this.CssClasses_.TICK );
+				tick && tick.remove();
+
+				this.count = 0;
+				this.state = '';
+			}
+
+			const randomCoin = document.querySelector( '.' + this.CssClasses_.FIELD ).querySelector( '.' + this.CssClasses_.COIN );
+			randomCoin && randomCoin.remove();
+			this.randomCoinData.added = false;
+			this.randomCoinData.index = -1;
+
+			this.appendRandomCoin();
+
+			resolve();
+		} );
+	}
+
+	toggleScoreChipsDisplay(target,n) {
+		const flag = target.classList.toggle( this.CssClasses_.CHIP_PICK );
+		this.score[n].pick = flag;
+		let chips = Array.from( document.querySelectorAll( '.' + this.CssClasses_.CHIP ) );
+		const chipMustDisable = chips.filter( (v,i) => this.score[i].pick && i != n )[0];
+
+		if (chipMustDisable) {
+			chipMustDisable.classList.remove( this.CssClasses_.CHIP_PICK );
+			const chip = this.score[chipMustDisable.dataset.index];
+			chip.pick = false;
+			return chip;
+		}
+		return false;
+	}
+
+	toggleFieldChipsDisplay(o) {
+		const side = this.transSymbolTextSide( o.side );
+		const chips = document.querySelectorAll( `.${this.CssClasses_.TICK}--${side}` );
+
+		if (chips.length && this.tickType.human === side) {
+			Array.from( chips ).forEach( v => v.classList.toggle( this.CssClasses_.FIELD + '__' + o.name ) );
+		}
+	}
+
+	transSymbolTextSide(side) {
+		if (side.length === 1) {
+			return side === 'x' ? 'cross' : 'nil';
+		} else {
+			return side === 'cross' ? 'x' : 'o';
+		}
 	}
 
 	draw() {
@@ -1127,12 +1527,14 @@ class Game {
 			this.displayMessage( 'draw' );
 			this.switchPartiPlayer();
 			this.setVolition();
-			this.restartMove()
-				.then(
-					result => {
-						this.makeMove();
-					}
-				);
+			setTimeout( () => {
+				this.restartParti()
+					.then(
+						result => {
+							this.makeMove();
+						}
+					);
+			}, this.Constant_.RESTART_PARTI );
 			return true;
 		}
 		return false;
@@ -1163,66 +1565,128 @@ class Game {
 		} );
 	}
 
-	gameMenuBarActions() {
-		const menu = document.querySelector( '.' + this.CssClasses_.MENU );
-		document.getElementById( this.CssIds_.BAR ).addEventListener( 'click', (e) => {
-			const target = e.target;
-			const findBtn = target.closest( 'button' );
-			if (findBtn) {
-				this.sound.play( 'click' );
-				this.gameMenuToggle( menu );
-				this.animate( menu, this.CssClasses_.FADEIN_DEF, 0, false );
-				this.gameMenuActions( menu );
-			}
-		} );
-		Array.from( document.getElementById( this.CssIds_.BAR ).querySelectorAll( 'button' ) ).forEach( (elem) => {
-			elem.addEventListener( 'mouseenter', (e) => {
-				this.sound.play( 'hover' );
-			} );
-		} );
-		document.addEventListener( 'keyup', (e) => {
-			if (e.key === 'F10') {
-				if (!this.openMenu) {
-					document.getElementById( this.CssIds_.F10 ).closest( 'button' ).click();
+	registerCallPopups() {
+		document.addEventListener( 'click', (e) => {
+			const btn = this.findNode( e );
+			if (btn) {
+				const popupClassElem = btn.dataset && btn.dataset.popup;
+				if (popupClassElem && !btn.disabled) {
+					const popup = document.querySelector( '.' + btn.dataset.popup );
+					const p = this.popupToggle( popup );
+					if (typeof(p) === 'boolean' && p) {
+						//  Call menuActions, chipActions
+						this[popupClassElem.replace( /^.+__/, '' ) + 'Actions']( popup );
+					}
 				}
 			}
 		} );
 	}
 
-	gameMenuActions(menu) {
-		const h = handler.bind( this );
-		const h1 = handler1.bind( this );
+	popupToggle(elem) {
+		const flag = elem.dataset.flag;
+		if (this[flag]) {
+			elem.removeEventListener( 'click', this.bindedHandler );
+			return new Promise( (resolve,reject) => {
+				this[flag] = !this[flag];
+				this.animate( elem, this.CssClasses_.FADE_OUT, this.Constant_.ANIM_TIMING )
+					.then(
+						result => {
+							elem.classList.remove( this.CssClasses_.FADEIN_DEF );
+							elem.classList.toggle( this.CssClasses_.HIDDEN );
+							resolve();
+						}
+					);
+			} );
+		} else {
+			elem.classList.toggle( this.CssClasses_.HIDDEN );
+			this.animate( elem, this.CssClasses_.FADEIN_DEF, 0, false );
+			this[flag] = !this[flag];
+			return true;
+		}
+	}
+
+	actionsHandler(o,elem) {
+		this.bindedHandler = handler.bind( this );
+		this.bindedElem = elem;
 
 		function handler(e) {
-			const target = e.target;
-			if (target.tagName === 'BUTTON') {
-				this.animate( menu, this.CssClasses_.FADE_OUT, this.Constant_.ANIM_TIMING )
+			const target = e.target.closest( 'button' ) || e.target.closest( 'a' );
+			if (target) {
+				o.act( target, elem );
+				if (/(\b|__)close\b/.test( target.className )) {
+					this.popupToggle( elem );
+				}
+			}
+		}
+
+		elem.addEventListener( 'click', this.bindedHandler );
+
+	}
+
+	menuActions(elem) {
+		this.actionsHandler( {
+			act: (target,elem) => {
+				this.popupToggle( elem )
 					.then(
 						result => {
 							if (target.id === this.CssIds_.MAIN_MENU) {
 								this.restartGame();
 							}
-							this.animate( menu, this.CssClasses_.FADEIN_DEF );
-							this.gameMenuToggle( menu );
 						}
 					);
-				this.sound.play( 'click' );
-				menu.removeEventListener( 'click', h );
-				menu.removeEventListener( 'mouseover', h1 );
 			}
-		}
-		function handler1(e) {
-			if (e.target.tagName === 'BUTTON' && !e.target.classList.contains( this.CssClasses_.HIDDEN )) {
-				this.sound.play( 'hover' );
-			}
-		}
-		menu.addEventListener( 'click', h );
-		menu.addEventListener( 'mouseover', h1 );
+		}, elem );
 	}
 
-	gameMenuToggle(elem) {
-		elem.classList.toggle( this.CssClasses_.HIDDEN );
-		this.openMenu = !this.openMenu;
+	chipsActions(elem) {
+		this.actionsHandler( {
+			act: (target,elem) => {
+				if (target.classList.contains( this.CssClasses_.CHIP ) && !target.disabled) {
+					const i = target.dataset.index;
+					const chip = this.score[i];
+					if (this.buyChip( chip, i )) {
+						const disabledChip = this.toggleScoreChipsDisplay( target, i );
+						if (disabledChip) {
+							this.toggleFieldChipsDisplay( disabledChip );
+						}
+						this.toggleFieldChipsDisplay( chip );
+					} else {
+						setTimeout( () => {
+							this.sound.play( 'coin1' );
+						}, this.getSoundInterval( 'click' ) );
+					}
+				}
+
+			}
+		}, elem );
+	}
+
+	statisticsActions(elem) {
+		this.pagination.toggleActive();
+		this.actionsHandler( {
+			act: (target,elem) => {
+				console.log('act');
+			}
+		}, elem );
+	}
+
+	aboutActions(elem) {
+		this.actionsHandler( {
+			act: (target,elem) => {
+			}
+		}, elem );
+	}
+
+	buyChip(o,n) {
+		if (!o.paid && (this.coinsData.coins - o.cost >= 0)) {
+			this.setCoins( -o.cost, false, false );
+			document.querySelector( `button[data-index="${n}"]` ).querySelector( '.' + this.CssClasses_.CHIPS_FOOT ).innerHTML = `<div class="${this.CssClasses_.CHIP_PAID}"></div>`;
+			setTimeout( () => {
+				this.sound.play( 'coins' );
+			}, this.getSoundInterval( 'click' ) );
+			return o.paid = true;
+		}
+		return o.paid;
 	}
 
 	restartGame() {
@@ -1245,6 +1709,49 @@ class Game {
 			);
 	}
 
+	findNode(e,selector = this.CssClasses_.BUTTON_ACT) {
+		return e.target.closest( '.' + selector );
+	}
+
+	soundOfButtons() {
+		document.addEventListener( 'click', (e) => {
+			const btn = this.findNode( e );
+			if (btn) {
+				if (btn.disabled && [...btn.children].some( v => v.classList.contains( this.CssClasses_.LOCK ) )) {
+					this.sound.play( 'lock' );
+				} else {
+					this.sound.play( 'click' );
+				}
+			}
+		} );
+
+		document.addEventListener( 'mouseover', (e) => {
+			const btn = this.findNode( e );
+			if (btn) {
+				if (!btn.dataset.hover) {
+					this.sound.play( 'hover' );
+					setTimeout( function() {
+						btn.dataset.hover = '';
+					}, 1000 );
+				}
+				btn.dataset.hover = 1;
+			}
+		} );
+	}
+
+	triggers() {
+		document.addEventListener( 'keyup', (e) => {
+			const hotkeys = Object.keys( this.CssIds_.HOTKEYS );
+			const findKey = hotkeys.find( (v) => v === e.key.toLowerCase() );
+			if (findKey) {
+				if (this.bindedElem) {
+					this.bindedElem.removeEventListener( 'click', this.bindedHandler );
+				}
+				document.getElementById( findKey ).closest( 'button' ).click();
+			}
+		} );
+	}
+
 	init() {
 		this.countAxesValues();
 		this.makeFieldCells();
@@ -1252,7 +1759,9 @@ class Game {
 			this.makeView()
 				.then(
 					result => {
-						this.gameMenuBarActions();
+						this.soundOfButtons();
+						this.triggers();
+						this.registerCallPopups();
 						resolve();
 					}
 				);
@@ -1281,7 +1790,7 @@ class UniqueArray extends Array {
 			} );
 		} else {
 			if (!this[0].length) {
-				throw new Error('The array does not have a suitable length!');
+				throw new Error( 'The array does not have a suitable length!' );
 			}
 			unique = this[0];
 		}
@@ -1290,11 +1799,15 @@ class UniqueArray extends Array {
 }
 
 
-// const sound = new Sound();
+if (test) {
+	const sound = new Sound();
 
-// const game = new Game( { sound: sound } );
+	const game = new Game( {
+		sound: sound
+	} );
 
-// game.init()
-// 	.then(
-// 		result => game.makeMove()
-// 	);
+	game.init()
+		.then(
+			result => game.makeMove()
+		);
+}

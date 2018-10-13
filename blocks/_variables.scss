@@ -4,20 +4,21 @@
  *
  */
 
-// $screen: #607d8b;
-// $screen: #95e0fd;
-$screen: #42b4e6;
-$phrase: #4ce4e6;
-$phrase: #95e0fd;
-$background: #42b4e6;
-$text-color-primary: rgba(0, 0, 0, .89);
+@import "colors-definitions";
+
+$font-family-default: 'Permanent Marker', cursive;
 $cursor-timing: .5s;
 $children: false;
 $anim-timing: 1s;
-$pink: #ea5b71;
-$blue: #1d7399;
-$gold: #b3ad21;
-$purple: #585f80;
+$game-img-path: '../blocks/game/';
+$text-color-primary: nth($grey, 10);
+$cursor-default: url('../blocks/game/game_cursor_default.svg'), auto;
+
+/*----------  screen  ----------*/
+
+$screen-title-color: nth($blue, 1);
+$screen-phrase-color: nth($blue, 2);
+$container-bg: nth($blue, 1);
 
 /*----------  field  ----------*/
 
@@ -26,12 +27,12 @@ $border-size: 20px;
 $border-color: white;
 $border-radius: 100%;
 $winner-size: 14px;
+$cell-before-color: nth($blue, 1);
 
 /*----------  nil  ----------*/
 
 $nil-size: 20px;
 $nil-border-size: 12px;
-
 
 /*----------  cross  ----------*/
 
@@ -39,17 +40,120 @@ $cross-size: 44px;
 $cross-height: 12px;
 $color: white;
 
+/*----------  confetti  ----------*/
+
+$confetti-width: 100px;
+$confetti-height: 130px;
+$confetti-colors: #d13447, #ffbf00, #263670;
+$confetti-count: 150;
+
+/*----------  dice  ----------*/
+
+$dice-bg-color: nth($grey, 2);
+$dice-border-color: white;
+$dice-dot-bg-color: white;
+$dice-size: 80px;
+$dice-border-radius: 10px;
+$dice-border-width: 6px;
+$dice-dot-size: 12px;
+
 /*----------  avatar  ----------*/
 
-$avatar-size: 90px;
+$ava-size: 90px;
+$ava-border-color: $border-color;
+$ava-hl-border-color: yellow;
+$ava-hl-shadow-color: nth($grey, 5);
 
 /*----------  message  ----------*/
 
-$message-font-size: 2.6rem;
-$animation-msg-timing: 1.5s;
+$msg-font-size: 2.6rem;
+$msg-animation-timing: 1.5s;
+$msg-shadow-color: $text-color-primary;
 
 /*----------  coin  ----------*/
 
 $coin-size: 28px;
-$coin-color: #dabd39;
-$coin-edge: #a88212;
+$coin-color: nth($gold, 2);
+$coin-edge: nth($gold, 3);
+
+/*----------  menu  ----------*/
+
+$menu-bar-ico-size: 43px;
+
+/*----------  experience  ----------*/
+
+$exp-width: 200px;
+$exp-height: 30px;
+$exp-border-size: 4px;
+$exp-color: nth($green, 1);
+
+/*----------  bonus  ----------*/
+
+$bonus-msg-font-size: 25px;
+$bonus-color: nth($green, 1);
+$bonus-lose-color: nth($red, 1);
+$bonus-volition-color: nth($purple, 2);
+
+/*----------  button  ----------*/
+
+$btn-font-size: 1.2rem;
+$btn-font-family: 'Permanent Marker', cursive;
+$btn-min-width: 200px;
+$btn-border-radius: 100px;
+$btn-bg-color: nth($blue, 1);
+$btn-ml-bg-color: nth($blue, 4);
+$btn-disabled-color: nth($grey, 3);
+$btn-disabled-bg-color: nth($grey, 4);
+
+/*----------  popup  ----------*/
+
+$popup-width: 470px;
+$popup-height: 700px;
+
+/*----------  statistics  ----------*/
+
+$st-table-offset-top: 20px;
+$st-th-bg-color: #64b5f6;
+$st-td-bg-color: #e3f2fd;
+$st-td-border-color: white;
+
+/*----------  pagination  ----------*/
+
+$pg-link-color: #7074f6;
+$pg-link-color-active: #66c9df;
+
+/*----------  chip  ----------*/
+
+$chip-size: 100px;
+$chip-border-color: nth($grey, 6);
+$chip-border-size: 1px;
+$chip-border-radius: 5px;
+$chip-side-color: nth($blue, 5);
+$chip-side-font-size: 16px;
+$chip-ico-size: 44px;
+$chip-ico-shadow-color: nth($grey, 7);
+$chip-lock-color: nth($grey, 8);
+$chip-grid-color: nth($grey, 9);
+$chip-grid-width: 4px;
+$chip-close-size: 40px;
+$chips-bar-ico-size: 35px;
+$chip-picked: nth($green, 2);
+$chips:
+star,
+heart,
+paw,
+flush,
+snowflake,
+cloud,
+cake,
+bomb,
+plane,
+basketball,
+affiliate;
+
+/*----------  about  ----------*/
+
+$about-font-size: 18px;
+$about-text-line-height: 1.8;
+$about-text-padding: 15px 29px 0;
+$about-affiliate-size: 22px;

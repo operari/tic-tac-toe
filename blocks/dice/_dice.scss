@@ -4,14 +4,13 @@
  *
  */
 
-$color: white;
 
 .dice {
 	box-sizing: border-box;
-	width: 80px;
-	height: 80px;
-	border-radius: 10px;
-	border: 6px solid $color;
+	width: $dice-size;
+	height: $dice-size;
+	border-radius: $dice-border-radius;
+	border: $dice-border-width solid $dice-border-color;
 	&.is-hidden {
 		display: none;
 	}
@@ -34,11 +33,11 @@ $color: white;
 		transform: rotate(90deg);
 	}
 	&__dot {
-		width: 12px;
-		height: 12px;
+		width: $dice-dot-size;
+		height: $dice-dot-size;
 		margin: 5px;
 		border-radius: 100%;
-		background-color: $color;
+		background-color: $dice-dot-bg-color;
 		.dice__side--2 & {
 			margin: 10px;
 		}

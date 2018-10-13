@@ -65,7 +65,7 @@
 		text-align: center;
 		text-transform: uppercase;
 		text-shadow: 2px 2px 0 white;
-		color: $screen;
+		color: $screen-title-color;
 	}
 	&__display {
 		text-shadow: 2px 2px 0 white;
@@ -76,7 +76,7 @@
 		text-align: center;
 		text-transform: capitalize;
 		text-shadow: 2px 2px 0 white;
-		color: $phrase;
+		color: $screen-phrase-color;
 	}
 	&__robot {
 		position: relative;
@@ -135,7 +135,7 @@
 		width: 100%;
 		height: 100%;
 		padding: 0 30%;
-		background-color: #404040;
+		background-color: $dice-bg-color;
 		&.is-hidden {
 			display: none;
 		}

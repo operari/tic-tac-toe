@@ -9,23 +9,21 @@
 	z-index: 1;
 	top: -20px;
 	left: -10px;
-	width: 100px;
-	height: 130px;
+	width: $confetti-width;
+	height: $confetti-height;
 }
 
 [class*="confetti__"] {
 	position: absolute;
 }
 
-$colors: (#d13447, #ffbf00, #263672);
-
-@for $i from 0 through 150 {
+@for $i from 0 through $confetti-count {
 	$w: random(8);
 	$l: random(100);
 	.confetti__#{$i} {
 		width: #{$w}px;
 		height: #{$w*0.4}px;
-		background-color: nth($colors, random(3));
+		background-color: nth($confetti-colors, random(3));
 		top: -10%;
 		left: unquote($l+"%");
 		opacity: random() + 0.5;

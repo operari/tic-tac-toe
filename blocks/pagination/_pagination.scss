@@ -1,0 +1,36 @@
+/**
+ *
+ * pagination
+ *
+ */
+
+.pagination {
+	width: 100%;
+	&__marked-list {
+		padding: 0;
+		margin: 15px 10px;
+		text-align: right;
+	}
+	&__list {
+		display: inline-block;
+		margin: 0 5px;
+		vertical-align: middle;
+		&:last-child {
+			margin-right: 0;
+		}
+	}
+	&__link {
+		color: $pg-link-color;
+		cursor: $cursor-default;
+		&:active {
+			color: $pg-link-color-active;
+		}
+		&:hover {
+			text-decoration: none;
+		}
+	}
+	&__link--active {
+		text-decoration: none;
+		color: $pg-link-color-active;
+	}
+}
