@@ -114,6 +114,11 @@
 			display: none;
 		}
 	}
+	&__difficulty {
+		&.is-hidden {
+			display: none;
+		}
+	}
 	&__side > div {
 		display: flex;
 		flex-flow: row nowrap;
@@ -143,4 +148,5 @@
 	&__dice--button {
 		display: none;
 	}
+	&__sign-in {}
 }

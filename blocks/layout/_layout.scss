@@ -94,20 +94,26 @@
 	pointer-events: none;
 }
 
-.bg-color--pink {
-	background-color: nth($pink, 1);
-}
 
-.bg-color--blue {
-	background-color: nth($blue, 3);
-}
-
-.bg-color--gold {
-	background-color: nth($gold, 1);
-}
-
-.bg-color--purple {
-	background-color: nth($purple, 1);
+.bg-color {
+	&--pink {
+		background-color: nth($pink, 1);
+	}
+	&--blue {
+		background-color: nth($blue, 3);
+	}
+	&--gold {
+		background-color: nth($gold, 1);
+	}
+	&--purple {
+		background-color: nth($purple, 1);
+	}
+	&--green {
+		background-color: nth($green, 3);
+	}
+	&--red {
+		background-color: nth($red, 1);
+	}
 }
 
 .row {

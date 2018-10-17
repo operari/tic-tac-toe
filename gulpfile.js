@@ -18,6 +18,7 @@ var SOURCES = [
   `${BLOCKS.common}/confetti/confetti.js`,
   `${BLOCKS.common}/pagination/pagination.js`,
   `${BLOCKS.common}/toggleScreen/toggleScreen.js`,
+  `${BLOCKS.common}/signIn/sign_in.js`,
   `${BLOCKS.common}/screen/screen.js`,
   `${BLOCKS.common}/game/game.js`
 ];

@@ -6,20 +6,20 @@ class Sound {
 		this.timings = {
 			hover: { start: 0.00, end: 0.50, priority: 1 },
 			click: { start: 1.00, end: 1.50, priority: 2 },
-			tick:  { start: 2.00, end: 2.50 },
-			dice:  { start: 3.00, end: 3.50 },
-			flash: { start: 4.00, end: 5.00 },
-			draw:  { start: 5.50, end: 6.00 },
-			win:   { start: 6.50, end: 7.60 },
-			point: { start: 8.00, end: 9.00 },
-			swing: { start: 9.50, end: 10.40 },
-			level: { start: 11.00, end: 11.70 },
-			coin:  { start: 12.00, end: 12.60 },
-			will:  { start: 13.00, end: 15.00 },
+			tick:  { start: 2.00, end: 2.50, priority: 3 },
+			dice:  { start: 3.00, end: 3.50, priority: 3 },
+			flash: { start: 4.00, end: 5.00, priority: 3 },
+			draw:  { start: 5.50, end: 6.00, priority: 4 },
+			win:   { start: 6.50, end: 7.60, priority: 4 },
+			point: { start: 8.00, end: 9.00, priority: 4 },
+			swing: { start: 9.50, end: 10.40, priority: 6 },
+			level: { start: 11.00, end: 11.70, priority: 7 },
+			coin:  { start: 12.00, end: 12.60, priority: 4 },
+			will:  { start: 13.00, end: 14.50, priority: 5 },
 			tada:  { start: 15.50, end: 17.00, priority: 3 },
 			lock:  { start: 17.50, end: 18.50, priority: 3 },
-			coins: { start: 19.00, end: 19.80 },
-			coin1: { start: 20.50, end: 22.00 }
+			coins: { start: 19.00, end: 19.80, priority: 3 },
+			coin1: { start: 20.50, end: 22.00, priority: 3 }
 		};
 		this.fileName = 'sound.mp3';
 		this.playerId = 'audio_player';
@@ -68,6 +68,12 @@ class Sound {
 		if (this.audio_) {
 			return new Promise( (resolve,reject) => {
 				if (this.compareTracksPriority( name )) {
+					if (this.playing) {
+						setTimeout( () => {
+							this.stop();
+							resolve();
+						}, this.getSoundInterval( this.playing ) );
+					}
 					this.playing = name;
 					this.audio_.currentTime = this.timings[name].start;
 					const playPromise = this.audio_.play();
@@ -76,7 +82,7 @@ class Sound {
 							this.timerId = setTimeout( () => {
 								this.stop();
 								resolve();
-							}, (this.timings[name].end - this.timings[name].start) * 1000 );
+							}, this.getSoundInterval( name ) );
 						} )
 						.catch( error => {
 							console.info( error );
@@ -90,12 +96,15 @@ class Sound {
 	}
 
 	stop() {
-		if (this.audio_) {
-			clearTimeout( this.timerId );
-			this.audio_.pause();
-			this.audio_.currentTime = 0;
-			this.playing = '';
-		}
+		clearTimeout( this.timerId );
+		this.audio_.pause();
+		this.audio_.currentTime = 0;
+		this.playing = '';
+		return true;
+	}
+
+	getSoundInterval(name,add = 0) {
+		return (this.timings[name].end - this.timings[name].start) * 1e3 + add;
 	}
 
 	mute() {
@@ -127,7 +136,7 @@ class Sound {
 				this.play( 'hover' );
 			} );
 			document.addEventListener( 'keyup', function(e) {
-				if (e.key.toLowerCase() === 'm') {
+				if (e.key && e.key.toLowerCase() === 'm') {
 					document.getElementById( 'm' ).parentNode.click();
 				}
 			} );

@@ -14,20 +14,20 @@ var Sound = function () {
 		this.timings = {
 			hover: { start: 0.00, end: 0.50, priority: 1 },
 			click: { start: 1.00, end: 1.50, priority: 2 },
-			tick: { start: 2.00, end: 2.50 },
-			dice: { start: 3.00, end: 3.50 },
-			flash: { start: 4.00, end: 5.00 },
-			draw: { start: 5.50, end: 6.00 },
-			win: { start: 6.50, end: 7.60 },
-			point: { start: 8.00, end: 9.00 },
-			swing: { start: 9.50, end: 10.40 },
-			level: { start: 11.00, end: 11.70 },
-			coin: { start: 12.00, end: 12.60 },
-			will: { start: 13.00, end: 15.00 },
+			tick: { start: 2.00, end: 2.50, priority: 3 },
+			dice: { start: 3.00, end: 3.50, priority: 3 },
+			flash: { start: 4.00, end: 5.00, priority: 3 },
+			draw: { start: 5.50, end: 6.00, priority: 4 },
+			win: { start: 6.50, end: 7.60, priority: 4 },
+			point: { start: 8.00, end: 9.00, priority: 4 },
+			swing: { start: 9.50, end: 10.40, priority: 6 },
+			level: { start: 11.00, end: 11.70, priority: 7 },
+			coin: { start: 12.00, end: 12.60, priority: 4 },
+			will: { start: 13.00, end: 14.50, priority: 5 },
 			tada: { start: 15.50, end: 17.00, priority: 3 },
 			lock: { start: 17.50, end: 18.50, priority: 3 },
-			coins: { start: 19.00, end: 19.80 },
-			coin1: { start: 20.50, end: 22.00 }
+			coins: { start: 19.00, end: 19.80, priority: 3 },
+			coin1: { start: 20.50, end: 22.00, priority: 3 }
 		};
 		this.fileName = 'sound.mp3';
 		this.playerId = 'audio_player';
@@ -74,6 +74,12 @@ var Sound = function () {
 			if (this.audio_) {
 				return new Promise(function (resolve, reject) {
 					if (_this.compareTracksPriority(name)) {
+						if (_this.playing) {
+							setTimeout(function () {
+								_this.stop();
+								resolve();
+							}, _this.getSoundInterval(_this.playing));
+						}
 						_this.playing = name;
 						_this.audio_.currentTime = _this.timings[name].start;
 						var playPromise = _this.audio_.play();
@@ -82,7 +88,7 @@ var Sound = function () {
 								_this.timerId = setTimeout(function () {
 									_this.stop();
 									resolve();
-								}, (_this.timings[name].end - _this.timings[name].start) * 1000);
+								}, _this.getSoundInterval(name));
 							}).catch(function (error) {
 								console.info(error);
 							});
@@ -96,12 +102,18 @@ var Sound = function () {
 	}, {
 		key: 'stop',
 		value: function stop() {
-			if (this.audio_) {
-				clearTimeout(this.timerId);
-				this.audio_.pause();
-				this.audio_.currentTime = 0;
-				this.playing = '';
-			}
+			clearTimeout(this.timerId);
+			this.audio_.pause();
+			this.audio_.currentTime = 0;
+			this.playing = '';
+			return true;
+		}
+	}, {
+		key: 'getSoundInterval',
+		value: function getSoundInterval(name) {
+			var add = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+
+			return (this.timings[name].end - this.timings[name].start) * 1e3 + add;
 		}
 	}, {
 		key: 'mute',
@@ -138,7 +150,7 @@ var Sound = function () {
 					_this2.play('hover');
 				});
 				document.addEventListener('keyup', function (e) {
-					if (e.key.toLowerCase() === 'm') {
+					if (e.key && e.key.toLowerCase() === 'm') {
 						document.getElementById('m').parentNode.click();
 					}
 				});
@@ -419,6 +431,125 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var SignIn = function () {
+	function SignIn() {
+		_classCallCheck(this, SignIn);
+
+		this.lang = 'RU';
+		this.__proto__.CssIds_ = {
+			SIGN: 'sign_in'
+		};
+		this.__proto__.CssClasses_ = {
+			HIDDEN: 'is-hidden',
+			FOCUSED: 'is-focused',
+			EYE: 'sign-in__view-pass',
+			SHOW_PASS: 'sign-in__show-pass'
+		};
+		this.__proto__.Constant_ = {
+			TEXTS: {
+				NAME: {
+					RU: 'Имя'
+				},
+				PASS: {
+					RU: 'Пароль'
+				},
+				NAME_ERROR: {
+					RU: 'Имя уже существует!'
+				},
+				PASS_ERROR: {
+					RU: 'Введите пароль не менее 5 символов!'
+				},
+				TITLE: {
+					RU: 'Войдите'
+				},
+				SUBMIT: {
+					RU: 'Войти'
+				}
+			}
+		};
+	}
+
+	_createClass(SignIn, [{
+		key: 'create',
+		value: function create() {
+			var html = '\n\t\t\t<div id="sign_in" class="sign-in screen__sign-in animated is-hidden">\n\t\t\t\t<div class="screen__sign-in-inner">\n\t\t\t\t\t<h2 class="screen__display">' + this.Constant_.TEXTS.TITLE[this.lang] + '</h2>\n\t\t\t\t\t<div class="sign-in__row">\n\t\t\t\t\t\t<div class="sign-in__input-field">\n\t\t\t\t\t\t\t<input type="text" id="sign_in_name" class="sign-in__name" value="" />\n\t\t\t\t\t\t\t<label for="sign_in_name">' + this.Constant_.TEXTS.NAME[this.lang] + '</label>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="sign-in__input-error animated is-hidden">' + this.Constant_.TEXTS.NAME_ERROR[this.lang] + '</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="sign-in__row">\n\t\t\t\t\t\t<div class="sign-in__input-field">\n\t\t\t\t\t\t\t<input type="password" id="sign_in_pass" class="sign-in__password" minlength="5" value="" />\n\t\t\t\t\t\t\t<label for="sign_in_pass">' + this.Constant_.TEXTS.PASS[this.lang] + '</label>\n\t\t\t\t\t\t\t<button type="button" class="sign-in__view-pass ml-button--dim is-hidden"></button>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="sign-in__input-error animated is-hidden">' + this.Constant_.TEXTS.PASS_ERROR[this.lang] + '</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div>\n\t\t\t\t\t\t<button type="submit">' + this.Constant_.TEXTS.SUBMIT[this.lang] + '</button>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>';
+
+			return html;
+		}
+	}, {
+		key: 'toggleHandler_',
+		value: function toggleHandler_(o, type, targetSelector, actSelector) {
+			var h = handler.bind(this);
+
+			function handler(e) {
+				var target = e.target;
+				if (!e.currentTarget.classList.contains(this.CssClasses_.HIDDEN) && target.tagName.toLowerCase() === targetSelector) {
+					var elemAct = target.parentNode.querySelector(actSelector);
+					if (elemAct) {
+						o.act(target, elemAct);
+					}
+				}
+			}
+
+			this.element_.addEventListener(type, h, true);
+		}
+	}, {
+		key: 'toggleLabel_',
+		value: function toggleLabel_() {
+			var _this = this;
+
+			this.toggleHandler_({
+				act: function act(target, elem) {
+					elem.classList.toggle(_this.CssClasses_.FOCUSED, target.value ? true : false);
+				}
+			}, 'blur', 'input', 'label');
+		}
+	}, {
+		key: 'toggleEye_',
+		value: function toggleEye_() {
+			var _this2 = this;
+
+			this.toggleHandler_({
+				act: function act(target, elem) {
+					elem.classList.toggle(_this2.CssClasses_.HIDDEN, !target.value.length ? true : false);
+				}
+			}, 'input', 'input', '.' + this.CssClasses_.EYE);
+		}
+	}, {
+		key: 'togglePassword_',
+		value: function togglePassword_() {
+			this.toggleHandler_({
+				act: function act(target, elem) {
+					elem.type = 'text';
+				}
+			}, 'mousedown', 'button', 'input');
+
+			this.toggleHandler_({
+				act: function act(target, elem) {
+					elem.type = 'password';
+				}
+			}, 'mouseup', 'button', 'input');
+		}
+	}, {
+		key: 'init',
+		value: function init() {
+			this.element_ = document.getElementById(this.CssIds_.SIGN);
+			if (this.element_) {
+				this.toggleLabel_();
+				this.toggleEye_();
+				this.togglePassword_();
+			}
+		}
+	}]);
+
+	return SignIn;
+}();
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var Screen = function () {
 	function Screen() {
 		_classCallCheck(this, Screen);
@@ -442,6 +573,8 @@ var Screen = function () {
 			MODE: 'game_mode',
 			MAIN: 'game_main',
 			SIDE: 'game_side',
+			SIGN: 'sign_in',
+			DIFFICULTY: 'game__difficulty',
 			FIRST: 'first_move',
 			DICE: 'dice',
 			WRP: 'wrapper'
@@ -465,7 +598,7 @@ var Screen = function () {
 	_createClass(Screen, [{
 		key: 'makeView',
 		value: function makeView() {
-			var html = '\n\t\t\t<div id="screen" class="screen animated fadeInDef">\n\t\t\t\t<div class="screen__inner">\n\t\t\t\t\t<div id="' + this.CssIds_.MAIN + '" class="screen__main animated">\n\t\t\t\t\t\t<h1 class="screen__title">\u041A\u0440\u0435\u0441\u0442\u0438\u043A\u0438-\u043D\u043E\u043B\u0438\u043A\u0438</h1>\n\t\t\t\t\t\t<div class="screen__phrase">\u041A\u043B\u0430\u0441\u0441\u0438\u043A\u0430 \u0438\u0433\u0440\u043E\u0432\u043E\u0439 \u0438\u043D\u0434\u0443\u0441\u0442\u0440\u0438\u0438</div>\n\n\t\t\t\t\t\t<div class="screen__robot">\n\t\t\t\t\t\t\t<button type="button" id="' + this.CssIds_.START + '" class="screen__start">\u041D\u0430\u0447\u0430\u0442\u044C \u0438\u0433\u0440\u0443</button>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="game_mode" class="screen__mode animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0438\u0433\u0440\u044B:</h2>\n\t\t\t\t\t\t<button class="bg-color--pink" data-mode="training" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0422\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043A\u0430</button>\n\t\t\t\t\t\t<button class="bg-color--blue" data-mode="vs_computer" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0421 \u043A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440\u043E\u043C</button>\n\t\t\t\t\t\t<button class="bg-color--gold" data-mode="vs_human" data-players=\'{ "player1": "human", "player2": "human1" }\'>\u0421 \u0447\u0435\u043B\u043E\u0432\u0435\u043A\u043E\u043C</button>\n\t\t\t\t\t\t<button class="bg-color--purple" data-mode="network" data-players=\'{ "player1": "human", "player2": "human1" }\' disabled>\u041F\u043E \u0441\u0435\u0442\u0438</button>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.SIDE + '" class="screen__side animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u0442\u043E\u0440\u043E\u043D\u0443:</h2>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<button class="screen__side-cross ml-button--fab" type="button" data-side="cross">x</button>\n\t\t\t\t\t\t\t<button class="screen__side-nil ml-button--fab" type="button" data-side="nil">o</button>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.FIRST + '" class="screen__pick-move animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u043A\u0442\u043E \u0445\u043E\u0434\u0438\u0442 \u043F\u0435\u0440\u0432\u044B\u043C:</h2>\n\t\t\t\t\t\t<button class="ml-button--color" data-run="human">\u0412\u044B</button>\n\t\t\t\t\t\t<button class="ml-button--color" data-run="computer">\u041A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440</button>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.DICE + '" class="screen__dice is-hidden animated">\n\t\t\t\t\t\t<button class="ml-button--color screen__dice--button">\u041D\u0430\u0447\u0430\u0442\u044C</button>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t';
+			var html = '\n\t\t\t<div id="screen" class="screen animated fadeInDef">\n\t\t\t\t<div class="screen__inner">\n\t\t\t\t\t<div id="' + this.CssIds_.MAIN + '" class="screen__main animated">\n\t\t\t\t\t\t<h1 class="screen__title">\u041A\u0440\u0435\u0441\u0442\u0438\u043A\u0438-\u043D\u043E\u043B\u0438\u043A\u0438</h1>\n\t\t\t\t\t\t<div class="screen__phrase">\u041A\u043B\u0430\u0441\u0441\u0438\u043A\u0430 \u0438\u0433\u0440\u043E\u0432\u043E\u0439 \u0438\u043D\u0434\u0443\u0441\u0442\u0440\u0438\u0438</div>\n\t\t\t\t\t\t<div class="screen__robot">\n\t\t\t\t\t\t\t<button type="button" id="' + this.CssIds_.START + '" class="screen__start">\u041D\u0430\u0447\u0430\u0442\u044C \u0438\u0433\u0440\u0443</button>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.MODE + '" class="screen__mode animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0440\u0435\u0436\u0438\u043C \u0438\u0433\u0440\u044B:</h2>\n\t\t\t\t\t\t<button class="bg-color--pink" data-mode="training" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0422\u0440\u0435\u043D\u0438\u0440\u043E\u0432\u043A\u0430</button>\n\t\t\t\t\t\t<button class="bg-color--blue" data-mode="vs_computer" data-players=\'{ "player1": "human", "player2": "computer" }\'>\u0421 \u043A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440\u043E\u043C</button>\n\t\t\t\t\t\t<button class="bg-color--gold" data-mode="vs_human" data-players=\'{ "player1": "human", "player2": "human1" }\'>\u0421 \u0447\u0435\u043B\u043E\u0432\u0435\u043A\u043E\u043C</button>\n\t\t\t\t\t\t<button class="bg-color--purple" data-mode="network" data-players=\'{ "player1": "human", "player2": "human1" }\' disabled>\u041F\u043E \u0441\u0435\u0442\u0438</button>\n\t\t\t\t\t</div>\n\t\t\t\t\t' + this.signIn.create() + '\n\t\t\t\t\t<div id="' + this.CssIds_.DIFFICULTY + '" class="screen__difficulty animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u043B\u043E\u0436\u043D\u043E\u0441\u0442\u044C:</h2>\n\t\t\t\t\t\t<button class="bg-color--green" data-difficulty="child">\u0420\u0435\u0431\u0435\u043D\u043E\u043A</button>\n\t\t\t\t\t\t<button class="bg-color--blue" data-difficulty="easy">\u041B\u0435\u0433\u043A\u043E</button>\n\t\t\t\t\t\t<button class="bg-color--red" data-difficulty="hard">\u0421\u043B\u043E\u0436\u043D\u043E</button>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.SIDE + '" class="screen__side animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u0442\u043E\u0440\u043E\u043D\u0443:</h2>\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<button class="screen__side-cross ml-button--fab" type="button" data-side="cross">x</button>\n\t\t\t\t\t\t\t<button class="screen__side-nil ml-button--fab" type="button" data-side="nil">o</button>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.FIRST + '" class="screen__pick-move animated is-hidden">\n\t\t\t\t\t\t<h2 class="screen__display">\u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u043A\u0442\u043E \u0445\u043E\u0434\u0438\u0442 \u043F\u0435\u0440\u0432\u044B\u043C:</h2>\n\t\t\t\t\t\t<button class="ml-button--color" data-run="human">\u0412\u044B</button>\n\t\t\t\t\t\t<button class="ml-button--color" data-run="computer">\u041A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440</button>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="' + this.CssIds_.DICE + '" class="screen__dice is-hidden animated">\n\t\t\t\t\t\t<button class="ml-button--color screen__dice--button">\u041D\u0430\u0447\u0430\u0442\u044C</button>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t';
 
 			document.getElementById(this.CssIds_.WRP).insertAdjacentHTML('beforeend', html);
 			this.screen = document.getElementById(this.CssIds_.SCREEN);
@@ -505,16 +638,40 @@ var Screen = function () {
 			return this.makeDiceWinner(n1, n2);
 		}
 	}, {
+		key: 'animWinnerDice',
+		value: function animWinnerDice(i) {
+			var _this = this;
+
+			setTimeout(function () {
+				_this.sound.play('flash');
+				var dice = document.querySelectorAll('.' + _this.CssClasses_.DICE)[i];
+				dice.classList.remove(_this.CssClasses_.ROTATEIN);
+				_this.animate(dice, _this.CssClasses_.FLASH);
+			}, this.Constant_.ANIM_TIMING);
+		}
+	}, {
+		key: 'hideDice',
+		value: function hideDice() {
+			var _this2 = this;
+
+			return new Promise(function (resolve, reject) {
+				setTimeout(function () {
+					document.getElementById(_this2.CssIds_.DICE).querySelector('button').click();
+					resolve();
+				}, _this2.Constant_.DICE_HIDE_TIMING);
+			});
+		}
+	}, {
 		key: 'animate',
 		value: function animate(el, cls) {
-			var _this = this;
+			var _this3 = this;
 
 			if (el) {
 				el.classList.add(cls);
 				return new Promise(function (resolve, reject) {
 					setTimeout(function () {
 						resolve();
-					}, _this.Constant_.ANIM_TIMING);
+					}, _this3.Constant_.ANIM_TIMING);
 				});
 			}
 			return false;
@@ -522,17 +679,17 @@ var Screen = function () {
 	}, {
 		key: 'toggleView',
 		value: function toggleView(id1, id2) {
-			var _this2 = this;
+			var _this4 = this;
 
 			var el1 = document.getElementById(id1);
 			var el2 = document.getElementById(id2);
 			if (el1) {
 				return new Promise(function (resolve, reject) {
-					_this2.animate(el1, _this2.CssClasses_.FADEOUT).then(function (result) {
+					_this4.animate(el1, _this4.CssClasses_.FADEOUT).then(function (result) {
 						el1.remove();
 						if (el2) {
-							el2.classList.toggle(_this2.CssClasses_.HIDDEN);
-							_this2.animate(el2, !_this2.dice ? _this2.CssClasses_.FADEIN : _this2.CssClasses_.FADEIN_DEF).then(function (result) {
+							el2.classList.toggle(_this4.CssClasses_.HIDDEN);
+							_this4.animate(el2, !_this4.dice ? _this4.CssClasses_.FADEIN : _this4.CssClasses_.FADEIN_DEF).then(function (result) {
 								resolve(el2);
 							});
 						} else {
@@ -594,72 +751,73 @@ var Screen = function () {
 	}, {
 		key: 'controller',
 		value: function controller() {
-			var _this4 = this;
+			var _this6 = this;
 
 			var btnStart = document.getElementById(this.CssIds_.START);
 			var arrIds = [this.CssIds_.MAIN, this.CssIds_.MODE, this.CssIds_.SIDE, this.CssIds_.DICE];
 
 			return new Promise(function (resolve, reject) {
 				(function rec(el, arr) {
-					var _this3 = this;
+					var _this5 = this;
 
 					if (arr.length) {
 						if (arr.length === 1 && this.dice) {
 							var i = this.throwDice();
-							setTimeout(function () {
-								_this3.sound.play('flash');
-								var dice = document.querySelectorAll('.' + _this3.CssClasses_.DICE)[i];
-								dice.classList.remove(_this3.CssClasses_.ROTATEIN);
-								_this3.animate(dice, _this3.CssClasses_.FLASH);
-							}, this.Constant_.ANIM_TIMING);
-							setTimeout(function () {
-								document.getElementById(_this3.CssIds_.DICE).querySelector('button').click();
-								resolve();
-							}, this.Constant_.DICE_HIDE_TIMING);
+							this.animWinnerDice(i);
+							this.hideDice().then(function (result) {
+								return resolve();
+							});
 						}
 						el.addEventListener('click', function (e) {
 							var target = e.target;
-							if (target.tagName !== "BUTTON") return;
-							if (target.id && target.id === _this3.CssIds_.START) {
+							if (target.tagName !== "BUTTON" || /sign/.test(target.className)) return;
+							if (target.id && target.id === _this5.CssIds_.START) {
 								var fullscreen = new ToggleScreen();
 								setTimeout(function () {
-									fullscreen.open();
-								}, _this3.Constant_.FULLSCREEN_TIMING);
+									return fullscreen.open();
+								}, _this5.Constant_.FULLSCREEN_TIMING);
 							}
-							_this3.sound.play('click');
-							_this3.switchLastScreen(target, arr);
-							_this3.makeOptions(target, ['side', 'run', 'mode', 'players']);
-							_this3.toggleView(arr[0], arr[1]).then(function (result) {
+							if (target.dataset.mode === 'training') {
+								arr.splice(1, 0, _this5.CssIds_.DIFFICULTY);
+							}
+							if (target.dataset.mode === 'vs_computer' || target.dataset.mode === 'network') {
+								arr.splice(1, 0, _this5.CssIds_.SIGN);
+							}
+							_this5.sound.play('click');
+							_this5.switchLastScreen(target, arr);
+							_this5.makeOptions(target, ['side', 'run', 'mode', 'players', 'difficulty']);
+							_this5.toggleView(arr[0], arr[1]).then(function (result) {
 								arr.shift();
-								return rec.call(_this3, result, arr);
+								return rec.call(_this5, result, arr);
 							});
 						});
 						el.addEventListener('mouseover', function (e) {
-							if (!e.target.classList.contains(_this3.CssClasses_.HIDDEN)) {
-								_this3.sound.play('hover');
+							if (!e.target.classList.contains(_this5.CssClasses_.HIDDEN)) {
+								_this5.sound.play('hover');
 							}
 						});
 					} else {
 						resolve();
 					}
-				}).call(_this4, btnStart, arrIds);
+				}).call(_this6, btnStart, arrIds);
 			});
 		}
 	}, {
 		key: 'init',
 		value: function init() {
-			var _this5 = this;
+			var _this7 = this;
 
 			var handler = function handler(e) {
-				_this5.makeView();
-				_this5.sound = new Sound();
-				_this5.options.sound = _this5.sound;
-				_this5.controller().then(function (result) {
-					_this5.screen.classList.toggle(_this5.CssClasses_.HIDDEN);
-					_this5.screen.classList.toggle(_this5.CssClasses_.FADEOUT);
-					document.getElementById(_this5.CssIds_.SCREEN).remove();
-
-					var game = new Game(_this5.options);
+				_this7.signIn = new SignIn();
+				_this7.makeView();
+				_this7.signIn.init();
+				_this7.sound = new Sound();
+				_this7.options.sound = _this7.sound;
+				_this7.controller().then(function (result) {
+					_this7.screen.classList.toggle(_this7.CssClasses_.HIDDEN);
+					_this7.screen.classList.toggle(_this7.CssClasses_.FADEOUT);
+					document.getElementById(_this7.CssIds_.SCREEN).remove();
+					var game = new Game(_this7.options);
 					game.init().then(function (result) {
 						return game.makeMove();
 					});
@@ -725,9 +883,9 @@ var Game = function () {
 
 		this.fieldSize = 9;
 		this.run = 'human';
-		this.mode = 'vs_computer';
-		this.parti = 3;
-		this.difficulty = 'hard';
+		this.mode = 'training';
+		this.parti = 1;
+		this.difficulty = 'child';
 		this.store = {};
 		this.openMenu = false;
 		this.openChips = false;
@@ -902,31 +1060,33 @@ var Game = function () {
 			CHIP_PICK: 'tttoe__chip--pick',
 			WIN: 'tttoe__cell--winner',
 			HIDDEN: 'is-hidden',
-			FADEIN_DEF: 'fadeInDef',
-			FADE_OUT: 'fadeOut',
 			MSG: 'message',
 			AVATAR: 'tttoe__avatar',
-			SHAKE: 'shake',
 			MENU: 'tttoe__menu',
-			FADEIN_LEFT: 'fadeInLeftBig',
-			FADEIN_RIGHT: 'fadeOutRightBig',
-			FLIP: 'flip',
-			FLASH: 'flash',
-			BOUNCE_IN: 'bounceIn',
-			BOUNCE_IN_UP: 'bounceInUp',
-			BOUNCE_OUT_UP: 'bounceOutUp',
-			BOUNCE_IN_DOWN: 'bounceInDown',
-			BOUNCE_OUT_DOWN: 'bounceOutDown',
-			TADA: 'tada',
 			COIN: 'tttoe__coin',
-			RUBBER_BAND: 'rubberBand',
 			BUTTON_ACT: 'tttoe__button-action',
 			LOCK: 'tttoe__chip-lock',
 			UNLOCK_CHIPS: 'tttoe__chips-unlock',
-			ANIM: 'animated',
 			CONFETTI_STATIC: 'tttoe__chips-confetti',
 			STATISTICS: 'tttoe__statistics',
-			ABOUT: 'tttoe__about'
+			ABOUT: 'tttoe__about',
+			ANIM: {
+				ANIMATED: 'animated',
+				SHAKE: 'shake',
+				FADEIN_DEF: 'fadeInDef',
+				FADE_OUT: 'fadeOut',
+				FADEIN_LEFT: 'fadeInLeftBig',
+				FADEIN_RIGHT: 'fadeOutRightBig',
+				FLIP: 'flip',
+				FLASH: 'flash',
+				RUBBER_BAND: 'rubberBand',
+				BOUNCE_IN: 'bounceIn',
+				BOUNCE_IN_UP: 'bounceInUp',
+				BOUNCE_OUT_UP: 'bounceOutUp',
+				BOUNCE_IN_DOWN: 'bounceInDown',
+				BOUNCE_OUT_DOWN: 'bounceOutDown',
+				TADA: 'tada'
+			}
 		};
 		this.__proto__.CssIds_ = {
 			APP: 'game',
@@ -959,17 +1119,22 @@ var Game = function () {
 			BONUS_TIMING: 2000,
 			SOUND_INTERVAL: 500,
 			RESTART_PARTI: 1000,
-			NEXT_LVL_TXT: 'След. ур.: ',
-			WILL: 'Воля',
 			VOLITION_COLOR: '#545bb0',
 			TEXTS: {
 				NEW_CHIP: {
 					RU: 'Новая фишка!'
+				},
+				NEXT_LVL_TXT: {
+					RU: 'След. ур.: '
+				},
+				WILL: {
+					RU: 'Воля'
 				}
 			}
 		};
 		Object.assign(this, options);
 		this.partiRun = this.run;
+		console.log(this.difficulty);
 	}
 
 	_createClass(Game, [{
@@ -1145,7 +1310,7 @@ var Game = function () {
 			var _this2 = this;
 
 			this.pagination = new Pagination(this.statistics.data.length, this.statistics.limit);
-			var html = '\n\t\t\t<div id="container" class="layout__container is-hidden animated">\n\t\t\t\t<div id="game" class="layout__game">\n\t\t\t\t\t<div class="layout__header">\n\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t<div class="tttoe__coins">\n\t\t\t\t\t\t\t\t<div class="tttoe__coin animated"></div>\n\t\t\t\t\t\t\t\t<div id="' + this.CssIds_.COINS + '" class="tttoe__coins-count">' + this.coinsData.coins + '</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t<div id="chips_bar" class="tttoe__chips-bar">\n\t\t\t\t\t\t\t\t\t<button class="tttoe__button-action ml-button--dim" data-popup="' + this.CssClasses_.CHIPS + '">\n\t\t\t\t\t\t\t\t\t\t<div class="tttoe__chips-bar-ico"></div>\n\t\t\t\t\t\t\t\t\t\t<div id="f" class="tttoe__key">f</div>\n\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div id="menu_bar" class="tttoe__menu-bar">\n\t\t\t\t\t\t\t\t\t<button class="tttoe__button-action ml-button--dim" data-popup="' + this.CssClasses_.MENU + '">\n\t\t\t\t\t\t\t\t\t\t<div class="tttoe__menu-bar-ico"></div>\n\t\t\t\t\t\t\t\t\t\t<div id="f10" class="tttoe__key">f10</div>\n\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div id="status" class="tttoe__status row">\n\t\t\t\t\t\t\t<div id="player1" class="tttoe__player">\n\t\t\t\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t\t\t\t<img src="blocks/game/' + this.players.player1 + '.png" alt="" />\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__name">' + this.playerFirstName + '</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div id="player2" class="tttoe__player">\n\t\t\t\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t\t\t\t<img src="blocks/game/' + this.players.player2 + '.png" alt="" />\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__name">' + this.playerSecondName + '</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__middle">\n\t\t\t\t\t\t<div id="' + this.CssIds_.FIELD_WRP + '" class="tttoe__field-wrp row row--center">\n\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<div id="comp_cursor" class="tttoe__computer-cursor is-hidden"></div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__footer">\n\t\t\t\t\t\t<div class="row row--right">\n\t\t\t\t\t\t\t<div class="tttoe__volition" data-title="' + this.Constant_.WILL + '">\n\t\t\t\t\t\t\t\t<div id="volition" class="tttoe__volition-count">0</div>\n\t\t\t\t\t\t\t\t<svg class="tttoe__volition-ico animated" width="42" height="42" fill="#ffffff" aria-hidden="true" data-prefix="fas" data-icon="brain" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M208 0c-29.87 0-54.74 20.55-61.8 48.22-.75-.02-1.45-.22-2.2-.22-35.34 0-64 28.65-64 64 0 4.84.64 9.51 1.66 14.04C52.54 138 32 166.57 32 200c0 12.58 3.16 24.32 8.34 34.91C16.34 248.72 0 274.33 0 304c0 33.34 20.42 61.88 49.42 73.89-.9 4.57-1.42 9.28-1.42 14.11 0 39.76 32.23 72 72 72 4.12 0 8.1-.55 12.03-1.21C141.61 491.31 168.25 512 200 512c39.77 0 72-32.24 72-72V205.45c-10.91 8.98-23.98 15.45-38.36 18.39-4.97 1.02-9.64-2.82-9.64-7.89v-16.18c0-3.57 2.35-6.78 5.8-7.66 24.2-6.16 42.2-27.95 42.2-54.04V64c0-35.35-28.66-64-64-64zm368 304c0-29.67-16.34-55.28-40.34-69.09 5.17-10.59 8.34-22.33 8.34-34.91 0-33.43-20.54-62-49.66-73.96 1.02-4.53 1.66-9.2 1.66-14.04 0-35.35-28.66-64-64-64-.75 0-1.45.2-2.2.22C422.74 20.55 397.87 0 368 0c-35.34 0-64 28.65-64 64v74.07c0 26.09 17.99 47.88 42.2 54.04 3.46.88 5.8 4.09 5.8 7.66v16.18c0 5.07-4.68 8.91-9.64 7.89-14.38-2.94-27.44-9.41-38.36-18.39V440c0 39.76 32.23 72 72 72 31.75 0 58.39-20.69 67.97-49.21 3.93.67 7.91 1.21 12.03 1.21 39.77 0 72-32.24 72-72 0-4.83-.52-9.54-1.42-14.11 29-12.01 49.42-40.55 49.42-73.89z"></path></svg>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="tttoe__exp-bar">\n\t\t\t\t\t\t\t\t<span id="' + this.CssIds_.POINTS + '" class="tttoe__exp-points animated">' + this.expData.points + '</span>\n\t\t\t\t\t\t\t\t<div id="' + this.CssIds_.EXP + '" class="tttoe__experience" data-next-lvl="' + this.Constant_.NEXT_LVL_TXT + ' ' + this.setNextLevelExp() + '"><span></span></div>\n\t\t\t\t\t\t\t\t<div id="level" class="tttoe__level">\u0423\u0440\u043E\u0432\u0435\u043D\u044C: <span class="animated">' + this.level + '</span></div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__popups">\n\t\t\t\t\t\t<div class="tttoe__chips layout__substrate animated is-hidden" data-flag="openChips">\n\t\t\t\t\t\t\t<div class="tttoe__chips-inner layout__popup">\n\t\t\t\t\t\t\t\t<h3>\u041C\u0430\u0433\u0430\u0437\u0438\u043D</h3>\n\t\t\t\t\t\t\t\t<div class="row row--left">\n\t\t\t\t\t\t\t\t\t' + this.fillScore() + '\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__statistics layout__substrate animated is-hidden">\n\t\t\t\t\t\t\t<div class="tttoe__statistics-inner layout__popup">\n\t\t\t\t\t\t\t\t<h3>\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430</h3>\n\t\t\t\t\t\t\t\t<div class="row row--left">\n\t\t\t\t\t\t\t\t\t' + this.fillStatistics() + '\n\t\t\t\t\t\t\t\t\t' + this.pagination.create() + '\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__about layout__substrate animated is-hidden">\n\t\t\t\t\t\t\t<div class="tttoe__about-inner layout__popup">\n\t\t\t\t\t\t\t\t<h3>\u041E\u0431 \u0438\u0433\u0440\u0435</h3>\n\t\t\t\t\t\t\t\t<p class="tttoe__about-text">\u041A\u0440\u0435\u0441\u0442\u0438\u043A\u0438-\u043D\u043E\u043B\u0438\u043A\u0438 - \u0438\u0433\u0440\u0430 \u043D\u0430\u0448\u0435\u0433\u043E \u0434\u0435\u0442\u0441\u0442\u0432\u0430.\n\t\t\t\t\t\t\t\t\u0418\u0433\u0440\u0430\u0439\u0442\u0435 \u043F\u0440\u043E\u0442\u0438\u0432 \u043A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440\u0430, \u0434\u0440\u0443\u0433\u0430 \u0438\u043B\u0438 \u043F\u043E \u0441\u0435\u0442\u0438.\n\t\t\t\t\t\t\t\t\u041F\u043E\u043B\u0443\u0447\u0430\u0439\u0442\u0435 \u043E\u043F\u044B\u0442, \u043F\u0440\u043E\u043A\u0430\u0447\u0438\u0432\u0430\u0439\u0442\u0435 \u0443\u0440\u043E\u0432\u0435\u043D\u044C \u0438 \u0440\u0430\u0437\u0431\u043B\u043E\u043A\u0438\u0440\u0443\u0439\u0442\u0435 \u044D\u043F\u0438\u0447\u043D\u044B\u0435 \u0444\u0438\u0448\u043A\u0438 \u0432 \u043C\u0430\u0433\u0430\u0437\u0438\u043D\u0435.\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t<div class="tttoe__affiliate"></div>\n\t\t\t\t\t\t\t\t<p><b>\u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A</b><br>\u0410\u043B\u0435\u043A\u0441\u0430\u043D\u0434\u0440 \u0420\u0430\u0434\u0435\u0432\u0438\u0447</p>\n\t\t\t\t\t\t\t\t<p><a href="http://operari.by" target="_blank">OPERARI</a></p>\n\t\t\t\t\t\t\t\t<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__menu layout__substrate animated is-hidden" data-flag="openMenu">\n\t\t\t\t\t\t\t<div class="game-menu">\n\t\t\t\t\t\t\t\t<button id="' + this.CssIds_.RESUME + '" class="game-menu__action tttoe__button-action bg-color--blue">\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F</button>\n\t\t\t\t\t\t\t\t<button class="game-menu__action tttoe__button-action bg-color--pink" data-popup="' + this.CssClasses_.STATISTICS + '">\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430</button>\n\t\t\t\t\t\t\t\t<button class="game-menu__action tttoe__button-action bg-color--gold" data-popup="' + this.CssClasses_.ABOUT + '">\u041E\u0431 \u0438\u0433\u0440\u0435</button>\n\t\t\t\t\t\t\t\t<button id="' + this.CssIds_.MAIN_MENU + '" class="game-menu__action tttoe__button-action bg-color--purple">\u0413\u043B\u0430\u0432\u043D\u043E\u0435 \u043C\u0435\u043D\u044E</button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__chips-unlock is-hidden">\n\t\t\t\t\t\t\t<div class="tttoe__chips-confetti animated">\n\t\t\t\t\t\t\t\t<img src="blocks/game/confetti.png" alt="" />\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div id="message" class="tttoe__message animated animated--msg"></div>\n\t\t\t\t\t\t<div class="tttoe__bonus animated is-hidden"><div id="bonus"></div></div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t';
+			var html = '\n\t\t\t<div id="container" class="layout__container is-hidden animated">\n\t\t\t\t<div id="game" class="layout__game">\n\t\t\t\t\t<div class="layout__header">\n\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t<div class="tttoe__coins">\n\t\t\t\t\t\t\t\t<div class="tttoe__coin animated"></div>\n\t\t\t\t\t\t\t\t<div id="' + this.CssIds_.COINS + '" class="tttoe__coins-count">' + this.coinsData.coins + '</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t<div id="chips_bar" class="tttoe__chips-bar">\n\t\t\t\t\t\t\t\t\t<button class="tttoe__button-action ml-button--dim" data-popup="' + this.CssClasses_.CHIPS + '">\n\t\t\t\t\t\t\t\t\t\t<div class="tttoe__chips-bar-ico"></div>\n\t\t\t\t\t\t\t\t\t\t<div id="f" class="tttoe__key">f</div>\n\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div id="menu_bar" class="tttoe__menu-bar">\n\t\t\t\t\t\t\t\t\t<button class="tttoe__button-action ml-button--dim" data-popup="' + this.CssClasses_.MENU + '">\n\t\t\t\t\t\t\t\t\t\t<div class="tttoe__menu-bar-ico"></div>\n\t\t\t\t\t\t\t\t\t\t<div id="f10" class="tttoe__key">f10</div>\n\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div id="status" class="tttoe__status row">\n\t\t\t\t\t\t\t<div id="player1" class="tttoe__player">\n\t\t\t\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t\t\t\t<img src="blocks/game/' + this.players.player1 + '.png" alt="" />\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__name">' + this.playerFirstName + '</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div id="player2" class="tttoe__player">\n\t\t\t\t\t\t\t\t<div class="tttoe__avatar">\n\t\t\t\t\t\t\t\t\t<img src="blocks/game/' + this.players.player2 + '.png" alt="" />\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__name">' + this.playerSecondName + '</div>\n\t\t\t\t\t\t\t\t<div class="tttoe__store">0</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__middle">\n\t\t\t\t\t\t<div id="' + this.CssIds_.FIELD_WRP + '" class="tttoe__field-wrp row row--center">\n\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<div id="comp_cursor" class="tttoe__computer-cursor is-hidden"></div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__footer">\n\t\t\t\t\t\t<div class="row row--right">\n\t\t\t\t\t\t\t<div class="tttoe__volition" data-title="' + this.Constant_.TEXTS.WILL.RU + '">\n\t\t\t\t\t\t\t\t<div id="volition" class="tttoe__volition-count">0</div>\n\t\t\t\t\t\t\t\t<svg class="tttoe__volition-ico animated" width="42" height="42" fill="#ffffff" aria-hidden="true" data-prefix="fas" data-icon="brain" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M208 0c-29.87 0-54.74 20.55-61.8 48.22-.75-.02-1.45-.22-2.2-.22-35.34 0-64 28.65-64 64 0 4.84.64 9.51 1.66 14.04C52.54 138 32 166.57 32 200c0 12.58 3.16 24.32 8.34 34.91C16.34 248.72 0 274.33 0 304c0 33.34 20.42 61.88 49.42 73.89-.9 4.57-1.42 9.28-1.42 14.11 0 39.76 32.23 72 72 72 4.12 0 8.1-.55 12.03-1.21C141.61 491.31 168.25 512 200 512c39.77 0 72-32.24 72-72V205.45c-10.91 8.98-23.98 15.45-38.36 18.39-4.97 1.02-9.64-2.82-9.64-7.89v-16.18c0-3.57 2.35-6.78 5.8-7.66 24.2-6.16 42.2-27.95 42.2-54.04V64c0-35.35-28.66-64-64-64zm368 304c0-29.67-16.34-55.28-40.34-69.09 5.17-10.59 8.34-22.33 8.34-34.91 0-33.43-20.54-62-49.66-73.96 1.02-4.53 1.66-9.2 1.66-14.04 0-35.35-28.66-64-64-64-.75 0-1.45.2-2.2.22C422.74 20.55 397.87 0 368 0c-35.34 0-64 28.65-64 64v74.07c0 26.09 17.99 47.88 42.2 54.04 3.46.88 5.8 4.09 5.8 7.66v16.18c0 5.07-4.68 8.91-9.64 7.89-14.38-2.94-27.44-9.41-38.36-18.39V440c0 39.76 32.23 72 72 72 31.75 0 58.39-20.69 67.97-49.21 3.93.67 7.91 1.21 12.03 1.21 39.77 0 72-32.24 72-72 0-4.83-.52-9.54-1.42-14.11 29-12.01 49.42-40.55 49.42-73.89z"></path></svg>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="tttoe__exp-bar">\n\t\t\t\t\t\t\t\t<span id="' + this.CssIds_.POINTS + '" class="tttoe__exp-points animated">' + this.expData.points + '</span>\n\t\t\t\t\t\t\t\t<div id="' + this.CssIds_.EXP + '" class="tttoe__experience" data-next-lvl="' + this.Constant_.TEXTS.NEXT_LVL_TXT.RU + ' ' + this.setNextLevelExp() + '"><span></span></div>\n\t\t\t\t\t\t\t\t<div id="level" class="tttoe__level">\u0423\u0440\u043E\u0432\u0435\u043D\u044C: <span class="animated">' + this.level + '</span></div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="layout__popups">\n\t\t\t\t\t\t<div class="tttoe__chips layout__substrate animated is-hidden" data-flag="openChips">\n\t\t\t\t\t\t\t<div class="tttoe__chips-inner layout__popup">\n\t\t\t\t\t\t\t\t<h3>\u041C\u0430\u0433\u0430\u0437\u0438\u043D</h3>\n\t\t\t\t\t\t\t\t<div class="row row--left">\n\t\t\t\t\t\t\t\t\t' + this.fillScore() + '\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__statistics layout__substrate animated is-hidden">\n\t\t\t\t\t\t\t<div class="tttoe__statistics-inner layout__popup">\n\t\t\t\t\t\t\t\t<h3>\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430</h3>\n\t\t\t\t\t\t\t\t<div class="row row--left">\n\t\t\t\t\t\t\t\t\t' + this.fillStatistics() + '\n\t\t\t\t\t\t\t\t\t' + this.pagination.create() + '\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__about layout__substrate animated is-hidden">\n\t\t\t\t\t\t\t<div class="tttoe__about-inner layout__popup">\n\t\t\t\t\t\t\t\t<h3>\u041E\u0431 \u0438\u0433\u0440\u0435</h3>\n\t\t\t\t\t\t\t\t<p class="tttoe__about-text">\u041A\u0440\u0435\u0441\u0442\u0438\u043A\u0438-\u043D\u043E\u043B\u0438\u043A\u0438 - \u0438\u0433\u0440\u0430 \u043D\u0430\u0448\u0435\u0433\u043E \u0434\u0435\u0442\u0441\u0442\u0432\u0430.\n\t\t\t\t\t\t\t\t\u0418\u0433\u0440\u0430\u0439\u0442\u0435 \u043F\u0440\u043E\u0442\u0438\u0432 \u043A\u043E\u043C\u043F\u044C\u044E\u0442\u0435\u0440\u0430, \u0434\u0440\u0443\u0433\u0430 \u0438\u043B\u0438 \u043F\u043E \u0441\u0435\u0442\u0438.\n\t\t\t\t\t\t\t\t\u041F\u043E\u043B\u0443\u0447\u0430\u0439\u0442\u0435 \u043E\u043F\u044B\u0442, \u043F\u0440\u043E\u043A\u0430\u0447\u0438\u0432\u0430\u0439\u0442\u0435 \u0443\u0440\u043E\u0432\u0435\u043D\u044C \u0438 \u043E\u0442\u043A\u0440\u044B\u0432\u0430\u0439\u0442\u0435 \u044D\u043F\u0438\u0447\u043D\u044B\u0435 \u0444\u0438\u0448\u043A\u0438 \u0432 \u043C\u0430\u0433\u0430\u0437\u0438\u043D\u0435.\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t<div class="tttoe__affiliate"></div>\n\t\t\t\t\t\t\t\t<p><b>\u0420\u0430\u0437\u0440\u0430\u0431\u043E\u0442\u0447\u0438\u043A</b><br>\u0410\u043B\u0435\u043A\u0441\u0430\u043D\u0434\u0440 \u0420\u0430\u0434\u0435\u0432\u0438\u0447</p>\n\t\t\t\t\t\t\t\t<p><a href="http://operari.by" target="_blank">OPERARI</a></p>\n\t\t\t\t\t\t\t\t<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__menu layout__substrate animated is-hidden" data-flag="openMenu">\n\t\t\t\t\t\t\t<div class="game-menu">\n\t\t\t\t\t\t\t\t<button id="' + this.CssIds_.RESUME + '" class="game-menu__action tttoe__button-action bg-color--blue">\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F</button>\n\t\t\t\t\t\t\t\t<button class="game-menu__action tttoe__button-action bg-color--pink" data-popup="' + this.CssClasses_.STATISTICS + '">\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043A\u0430</button>\n\t\t\t\t\t\t\t\t<button class="game-menu__action tttoe__button-action bg-color--gold" data-popup="' + this.CssClasses_.ABOUT + '">\u041E\u0431 \u0438\u0433\u0440\u0435</button>\n\t\t\t\t\t\t\t\t<button id="' + this.CssIds_.MAIN_MENU + '" class="game-menu__action tttoe__button-action bg-color--purple">\u0413\u043B\u0430\u0432\u043D\u043E\u0435 \u043C\u0435\u043D\u044E</button>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="tttoe__chips-unlock is-hidden">\n\t\t\t\t\t\t\t<div class="tttoe__chips-confetti animated">\n\t\t\t\t\t\t\t\t<img src="blocks/game/confetti.png" alt="" />\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div id="message" class="tttoe__message animated animated--msg"></div>\n\t\t\t\t\t\t<div class="tttoe__bonus animated is-hidden"><div id="bonus"></div></div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t';
 
 			var field = this.makeViewField();
 
@@ -1171,7 +1336,7 @@ var Game = function () {
 		value: function showView() {
 			var container = document.getElementById(this.CssIds_.CONTAINER);
 			container.classList.toggle(this.CssClasses_.HIDDEN);
-			container.classList.toggle(this.CssClasses_.FADEIN_DEF);
+			container.classList.toggle(this.CssClasses_.ANIM.FADEIN_DEF);
 		}
 	}, {
 		key: 'fillScore',
@@ -1214,6 +1379,8 @@ var Game = function () {
 					var cell = document.createElement('td');
 					if (prop === 'chip') {
 						cell.innerHTML = '<div class="tttoe__chip-ico tttoe__chip-ico--mini tttoe__' + o[prop] + '"></div>';
+					} else if (prop === 'name') {
+						cell.innerHTML = '<span></span><span>' + o[prop] + '</span>';
 					} else {
 						cell.textContent = o[prop];
 					}
@@ -1286,7 +1453,7 @@ var Game = function () {
 					var winnerId = _this4.getPlayerId(winnerName);
 					var loserId = _this4.getPlayerId(loserName);
 					_this4.throwConfetti(document.getElementById(winnerId), _this4.Constant_.CONFETTI_TIMING);
-					_this4.animate(document.getElementById(loserId).querySelector('.' + _this4.CssClasses_.AVATAR), _this4.CssClasses_.SHAKE, _this4.Constant_.SHAK_TIMING);
+					_this4.animate(document.getElementById(loserId).querySelector('.' + _this4.CssClasses_.AVATAR), _this4.CssClasses_.ANIM.SHAKE, _this4.Constant_.SHAK_TIMING);
 					_this4.setPoints(winnerName, true).then(function (result) {
 						_this4.resetStores();
 						resolve();
@@ -1469,27 +1636,52 @@ var Game = function () {
 			}
 		}
 	}, {
+		key: 'getRandomCell',
+		value: function getRandomCell() {
+			var ticked = false,
+			    n = void 0;
+			do {
+				n = this.getRandomInt(0, this.fieldSize);
+				ticked = this.isTickedCell(n);
+			} while (ticked === true);
+
+			return n + 1;
+		}
+	}, {
 		key: 'analysis',
 		value: function analysis() {
 			var result = {};
 			if (this.count < 2) {
-				var ticked = false,
-				    n = void 0;
-				do {
-					n = this.getRandomInt(0, this.fieldSize);
-					ticked = this.isTickedCell(n);
-				} while (ticked === true);
-				result.cell = n + 1;
+				result.cell = this.getRandomCell();
 			} else {
 				var o = this.filterCells();
 				var resultCompareComputer = this.makePotentialCells(o.emptyCells, o.computerCells, 'computer');
 				var resultCompareHuman = this.makePotentialCells(o.emptyCells, o.humanCells, 'human');
 
 				if (resultCompareComputer.cell) {
-					this.state = 'win';
-					result = resultCompareComputer;
+					if (this.difficulty === 'child' && this.count <= this.fieldSize - 2) {
+						var randCell = this.getRandomCell();
+						if (randCell === resultCompareComputer.cell) {
+							this.state = 'win';
+							result = resultCompareComputer;
+						} else {
+							result.cell = randCell;
+						}
+					} else {
+						this.state = 'win';
+						result = resultCompareComputer;
+					}
 				} else if (resultCompareHuman.cell) {
-					result.cell = this.difficulty === 'hard' ? resultCompareHuman.cell : this.chooseRandomCell(resultCompareComputer);
+					switch (this.difficulty) {
+						case 'hard':
+							result.cell = resultCompareHuman.cell;
+							break;
+						case 'easy':
+							result.cell = resultCompareComputer.length ? this.chooseRandomCell(resultCompareComputer) : resultCompareHuman.cell;
+							break;
+						default:
+							result.cell = this.getRandomCell();
+					}
 				} else {
 					if (resultCompareComputer.length) {
 						result.cell = this.chooseRandomCell(resultCompareComputer);
@@ -1673,30 +1865,33 @@ var Game = function () {
 		value: function setPoints(winner, bonus) {
 			var _this9 = this;
 
-			if (this.mode === 'vs_computer') {
-				if (!bonus) {
-					this.expData.points = winner === 'human' ? this.expData.points + this.expData.winPointsGame : this.expData.points && this.expData.points - this.losePoints;
-					this.expData.partiPoints += winner === 'human' ? this.expData.winPointsGame : 0;
-				} else {
-					this.expData.points = winner === 'human' ? this.expData.points + this.bonusPoints : this.expData.points - this.bonusLosePoints;
-					this.expData.points = Number.parseInt(this.expData.points);
-					return new Promise(function (resolve, reject) {
+			return new Promise(function (resolve, reject) {
+				if (_this9.mode === 'vs_computer') {
+					if (!bonus) {
+						_this9.expData.points = winner === 'human' ? _this9.expData.points + _this9.expData.winPointsGame : _this9.expData.points && _this9.expData.points - _this9.losePoints;
+						_this9.expData.partiPoints += winner === 'human' ? _this9.expData.winPointsGame : 0;
+					} else {
+						_this9.expData.points = winner === 'human' ? _this9.expData.points + _this9.bonusPoints : _this9.expData.points - _this9.bonusLosePoints;
+						_this9.expData.points = Number.parseInt(_this9.expData.points);
 						setTimeout(function () {
 							_this9.displayBonus(winner).then(function (result) {
 								resolve();
 							});
 							_this9.expData.partiPoints = 0;
 						}, _this9.Constant_.MSG_ANIM_TIMING);
-					});
+					}
+					if (_this9.gameWinPoints > 0) {
+						_this9.levelUp();
+					} else {
+						_this9.levelDown();
+					}
+					_this9.setCoins();
+					_this9.displayExperience();
 				}
-				if (this.gameWinPoints > 0) {
-					this.levelUp();
-				} else {
-					this.levelDown();
-				}
-				this.setCoins();
-				this.displayExperience();
-			}
+				setTimeout(function () {
+					return resolve();
+				}, _this9.Constant_.MSG_ANIM_TIMING);
+			});
 		}
 	}, {
 		key: 'setNextLevelExp',
@@ -1799,7 +1994,7 @@ var Game = function () {
 					_this13.sound.play('level');
 				}, this.Constant_.SOUND_INTERVAL + 200);
 				this.displayLevel();
-				document.getElementById(this.CssIds_.EXP).dataset.nextLvl = this.Constant_.NEXT_LVL_TXT + this.expData.nextLevelExp;
+				document.getElementById(this.CssIds_.EXP).dataset.nextLvl = this.Constant_.TEXTS.NEXT_LVL_TXT.RU + this.expData.nextLevelExp;
 			}
 		}
 	}, {
@@ -1810,7 +2005,7 @@ var Game = function () {
 				this.expData.nextLevelExp = this.expData.currentLevelExp;
 				this.setCurrentLevelExp();
 				this.displayLevel(false);
-				document.getElementById(this.CssIds_.EXP).dataset.nextLvl = this.Constant_.NEXT_LVL_TXT + this.expData.nextLevelExp;
+				document.getElementById(this.CssIds_.EXP).dataset.nextLvl = this.Constant_.TEXTS.NEXT_LVL_TXT.RU + this.expData.nextLevelExp;
 			}
 		}
 	}, {
@@ -2039,12 +2234,12 @@ var Game = function () {
 				}
 				elem.parentNode.classList.toggle(_this17.CssClasses_.HIDDEN);
 				_this17.sound.play('swing');
-				_this17.animate(elem.parentNode, _this17.CssClasses_.FADEIN_LEFT, 0, false).then(function (result) {
+				_this17.animate(elem.parentNode, _this17.CssClasses_.ANIM.FADEIN_LEFT, 0, false).then(function (result) {
 					setTimeout(function () {
 						_this17.sound.play('swing');
-						_this17.animate(elem.parentNode, _this17.CssClasses_.FADEIN_RIGHT, _this17.Constant_.ANIM_TIMING).then(function (result) {
+						_this17.animate(elem.parentNode, _this17.CssClasses_.ANIM.FADEIN_RIGHT, _this17.Constant_.ANIM_TIMING).then(function (result) {
 							elem.parentNode.classList.toggle(_this17.CssClasses_.HIDDEN);
-							elem.parentNode.classList.toggle(_this17.CssClasses_.FADEIN_LEFT);
+							elem.parentNode.classList.toggle(_this17.CssClasses_.ANIM.FADEIN_LEFT);
 						});
 						resolve();
 					}, _this17.Constant_.BONUS_TIMING);
@@ -2063,13 +2258,13 @@ var Game = function () {
 			var coin = document.querySelectorAll('.' + this.CssClasses_.COIN)[randomCoin ? 1 : 0];
 			coin.classList.remove(this.CssClasses_.HIDDEN);
 			if (animPoints) {
-				this.animate(document.getElementById(this.CssIds_.POINTS), this.CssClasses_.FLASH, this.Constant_.ANIM_TIMING);
+				this.animate(document.getElementById(this.CssIds_.POINTS), this.CssClasses_.ANIM.FLASH, this.Constant_.ANIM_TIMING);
 			}
 			if (sound) {
 				this.sound.play('coin');
 			}
 			return new Promise(function (resolve, reject) {
-				_this18.animate(coin, _this18.CssClasses_.FLIP, _this18.Constant_.ANIM_TIMING).then(function (result) {
+				_this18.animate(coin, _this18.CssClasses_.ANIM.FLIP, _this18.Constant_.ANIM_TIMING).then(function (result) {
 					randomCoin && coin.remove();
 					resolve();
 				});
@@ -2086,7 +2281,7 @@ var Game = function () {
 			elem.textContent = this.level;
 			if (anim) {
 				setTimeout(function () {
-					_this19.animate(elem, _this19.CssClasses_.BOUNCE_IN, _this19.Constant_.ANIM_TIMING);
+					_this19.animate(elem, _this19.CssClasses_.ANIM.BOUNCE_IN, _this19.Constant_.ANIM_TIMING);
 				}, this.Constant_.SOUND_INTERVAL + 200);
 			}
 		}
@@ -2098,11 +2293,12 @@ var Game = function () {
 			var elem = document.getElementById(this.CssIds_.VOLITION);
 			elem.textContent = this.volitionData.value;
 			if (anim) {
-				this.sound.play('will');
-				elem.nextElementSibling.style.fill = this.Constant_.VOLITION_COLOR;
-				this.animate(elem.nextElementSibling, this.CssClasses_.RUBBER_BAND, this.Constant_.ANIM_TIMING).then(function (result) {
-					elem.nextElementSibling.style.fill = '#ffffff';
+				this.sound.play('will').then(function (result) {
 					_this20.displayBonus(null, points);
+				});
+				elem.nextElementSibling.style.fill = this.Constant_.VOLITION_COLOR;
+				this.animate(elem.nextElementSibling, this.CssClasses_.ANIM.RUBBER_BAND, this.Constant_.ANIM_TIMING).then(function (result) {
+					elem.nextElementSibling.style.fill = '#ffffff';
 				});
 			}
 		}
@@ -2116,25 +2312,25 @@ var Game = function () {
 				var confetti = wrp.querySelector('.' + _this21.CssClasses_.CONFETTI_STATIC);
 				var btnAct = document.querySelector('.' + _this21.CssClasses_.BUTTON_ACT);
 				var clone = elem.cloneNode();
-				clone.classList.add(_this21.CssClasses_.ANIM);
+				clone.classList.add(_this21.CssClasses_.ANIM.ANIMATED);
 				var span = document.createElement('span');
 				span.textContent = _this21.Constant_.TEXTS.NEW_CHIP.RU;
-				span.className = _this21.CssClasses_.ANIM;
+				span.className = _this21.CssClasses_.ANIM.ANIMATED;
 				clone.appendChild(span);
 				wrp.appendChild(clone);
 
 				_this21.sound.play('swing');
 				btnAct.disabled = true;
 				wrp.classList.toggle(_this21.CssClasses_.HIDDEN);
-				_this21.animate(confetti, _this21.CssClasses_.BOUNCE_IN_DOWN, _this21.Constant_.ANIM_TIMING, false);
-				_this21.animate(clone, _this21.CssClasses_.BOUNCE_IN_UP, _this21.Constant_.ANIM_TIMING, false).then(function (result) {
-					_this21.animate(span, _this21.CssClasses_.TADA, 0, false);
+				_this21.animate(confetti, _this21.CssClasses_.ANIM.BOUNCE_IN_DOWN, _this21.Constant_.ANIM_TIMING, false);
+				_this21.animate(clone, _this21.CssClasses_.ANIM.BOUNCE_IN_UP, _this21.Constant_.ANIM_TIMING, false).then(function (result) {
+					_this21.animate(span, _this21.CssClasses_.ANIM.TADA, 0, false);
 					_this21.sound.play('tada').then(function (result) {
 						_this21.sound.play('swing');
-						_this21.animate(confetti, _this21.CssClasses_.BOUNCE_OUT_DOWN, _this21.Constant_.ANIM_TIMING).then(function (result) {
-							confetti.classList.remove(_this21.CssClasses_.BOUNCE_IN_DOWN);
+						_this21.animate(confetti, _this21.CssClasses_.ANIM.BOUNCE_OUT_DOWN, _this21.Constant_.ANIM_TIMING).then(function (result) {
+							confetti.classList.remove(_this21.CssClasses_.ANIM.BOUNCE_IN_DOWN);
 						});
-						_this21.animate(clone, _this21.CssClasses_.BOUNCE_OUT_UP, _this21.Constant_.ANIM_TIMING).then(function (result) {
+						_this21.animate(clone, _this21.CssClasses_.ANIM.BOUNCE_OUT_UP, _this21.Constant_.ANIM_TIMING).then(function (result) {
 							clone.remove();
 							btnAct.disabled = false;
 							wrp.classList.toggle(_this21.CssClasses_.HIDDEN);
@@ -2228,15 +2424,16 @@ var Game = function () {
 			var _this25 = this;
 
 			if (this.count === this.fieldSize) {
-				this.sound.play('draw');
 				this.displayMessage('draw');
 				this.switchPartiPlayer();
-				this.setVolition();
-				setTimeout(function () {
-					_this25.restartParti().then(function (result) {
-						_this25.makeMove();
-					});
-				}, this.Constant_.RESTART_PARTI);
+				this.sound.play('draw').then(function (result) {
+					_this25.setVolition();
+					setTimeout(function () {
+						_this25.restartParti().then(function (result) {
+							_this25.makeMove();
+						});
+					}, _this25.Constant_.RESTART_PARTI);
+				});
 				return true;
 			}
 			return false;
@@ -2299,15 +2496,15 @@ var Game = function () {
 				elem.removeEventListener('click', this.bindedHandler);
 				return new Promise(function (resolve, reject) {
 					_this28[flag] = !_this28[flag];
-					_this28.animate(elem, _this28.CssClasses_.FADE_OUT, _this28.Constant_.ANIM_TIMING).then(function (result) {
-						elem.classList.remove(_this28.CssClasses_.FADEIN_DEF);
+					_this28.animate(elem, _this28.CssClasses_.ANIM.FADE_OUT, _this28.Constant_.ANIM_TIMING).then(function (result) {
+						elem.classList.remove(_this28.CssClasses_.ANIM.FADEIN_DEF);
 						elem.classList.toggle(_this28.CssClasses_.HIDDEN);
 						resolve();
 					});
 				});
 			} else {
 				elem.classList.toggle(this.CssClasses_.HIDDEN);
-				this.animate(elem, this.CssClasses_.FADEIN_DEF, 0, false);
+				this.animate(elem, this.CssClasses_.ANIM.FADEIN_DEF, 0, false);
 				this[flag] = !this[flag];
 				return true;
 			}
@@ -2408,14 +2605,14 @@ var Game = function () {
 			var _this32 = this;
 
 			var container = document.getElementById(this.CssIds_.CONTAINER);
-			this.animate(container, this.CssClasses_.FADE_OUT, this.Constant_.ANIM_TIMING).then(function (result) {
-				container.classList.remove(_this32.CssClasses_.FADEIN_DEF);
+			this.animate(container, this.CssClasses_.ANIM.FADE_OUT, this.Constant_.ANIM_TIMING).then(function (result) {
+				container.classList.remove(_this32.CssClasses_.ANIM.FADEIN_DEF);
 				container.classList.add(_this32.CssClasses_.HIDDEN);
 				container.remove();
 
 				var screen = new Screen();
 				screen.init();
-				screen.screen.classList.remove(_this32.CssClasses_.FADE_OUT);
+				screen.screen.classList.remove(_this32.CssClasses_.ANIM.FADE_OUT);
 				screen.screen.classList.remove(_this32.CssClasses_.HIDDEN);
 
 				var fullscreen = new ToggleScreen();

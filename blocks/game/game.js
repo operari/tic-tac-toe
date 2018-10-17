@@ -4,9 +4,9 @@ class Game {
 	constructor(options) {
 		this.fieldSize = 9;
 		this.run = 'human';
-		this.mode = 'vs_computer';
-		this.parti = 3;
-		this.difficulty = 'hard';
+		this.mode = 'training';
+		this.parti = 1;
+		this.difficulty = 'child';
 		this.store = {};
 		this.openMenu = false;
 		this.openChips = false;
@@ -184,31 +184,33 @@ class Game {
 			CHIP_PICK: 'tttoe__chip--pick',
 			WIN: 'tttoe__cell--winner',
 			HIDDEN: 'is-hidden',
-			FADEIN_DEF: 'fadeInDef',
-			FADE_OUT: 'fadeOut',
 			MSG: 'message',
 			AVATAR: 'tttoe__avatar',
-			SHAKE: 'shake',
 			MENU: 'tttoe__menu',
-			FADEIN_LEFT: 'fadeInLeftBig',
-			FADEIN_RIGHT: 'fadeOutRightBig',
-			FLIP: 'flip',
-			FLASH: 'flash',
-			BOUNCE_IN: 'bounceIn',
-			BOUNCE_IN_UP: 'bounceInUp',
-			BOUNCE_OUT_UP: 'bounceOutUp',
-			BOUNCE_IN_DOWN: 'bounceInDown',
-			BOUNCE_OUT_DOWN: 'bounceOutDown',
-			TADA: 'tada',
 			COIN: 'tttoe__coin',
-			RUBBER_BAND: 'rubberBand',
 			BUTTON_ACT: 'tttoe__button-action',
 			LOCK: 'tttoe__chip-lock',
 			UNLOCK_CHIPS: 'tttoe__chips-unlock',
-			ANIM: 'animated',
 			CONFETTI_STATIC: 'tttoe__chips-confetti',
 			STATISTICS: 'tttoe__statistics',
-			ABOUT: 'tttoe__about'
+			ABOUT: 'tttoe__about',
+			ANIM: {
+				ANIMATED: 'animated',
+				SHAKE: 'shake',
+				FADEIN_DEF: 'fadeInDef',
+				FADE_OUT: 'fadeOut',
+				FADEIN_LEFT: 'fadeInLeftBig',
+				FADEIN_RIGHT: 'fadeOutRightBig',
+				FLIP: 'flip',
+				FLASH: 'flash',
+				RUBBER_BAND: 'rubberBand',
+				BOUNCE_IN: 'bounceIn',
+				BOUNCE_IN_UP: 'bounceInUp',
+				BOUNCE_OUT_UP: 'bounceOutUp',
+				BOUNCE_IN_DOWN: 'bounceInDown',
+				BOUNCE_OUT_DOWN: 'bounceOutDown',
+				TADA: 'tada'
+			},
 		};
 		this.__proto__.CssIds_ = {
 			APP: 'game',
@@ -241,17 +243,22 @@ class Game {
 			BONUS_TIMING: 2000,
 			SOUND_INTERVAL: 500,
 			RESTART_PARTI: 1000,
-			NEXT_LVL_TXT: 'След. ур.: ',
-			WILL: 'Воля',
 			VOLITION_COLOR: '#545bb0',
 			TEXTS: {
 				NEW_CHIP: {
 					RU: 'Новая фишка!'
+				},
+				NEXT_LVL_TXT: {
+					RU: 'След. ур.: '
+				},
+				WILL: {
+					RU: 'Воля'
 				}
 			}
 		};
 		Object.assign( this, options );
 		this.partiRun = this.run;
+		console.log(this.difficulty);
 	}
 
 	countAxesValues() {
@@ -476,13 +483,13 @@ class Game {
 					</div>
 					<div class="layout__footer">
 						<div class="row row--right">
-							<div class="tttoe__volition" data-title="${this.Constant_.WILL}">
+							<div class="tttoe__volition" data-title="${this.Constant_.TEXTS.WILL.RU}">
 								<div id="volition" class="tttoe__volition-count">0</div>
 								<svg class="tttoe__volition-ico animated" width="42" height="42" fill="#ffffff" aria-hidden="true" data-prefix="fas" data-icon="brain" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M208 0c-29.87 0-54.74 20.55-61.8 48.22-.75-.02-1.45-.22-2.2-.22-35.34 0-64 28.65-64 64 0 4.84.64 9.51 1.66 14.04C52.54 138 32 166.57 32 200c0 12.58 3.16 24.32 8.34 34.91C16.34 248.72 0 274.33 0 304c0 33.34 20.42 61.88 49.42 73.89-.9 4.57-1.42 9.28-1.42 14.11 0 39.76 32.23 72 72 72 4.12 0 8.1-.55 12.03-1.21C141.61 491.31 168.25 512 200 512c39.77 0 72-32.24 72-72V205.45c-10.91 8.98-23.98 15.45-38.36 18.39-4.97 1.02-9.64-2.82-9.64-7.89v-16.18c0-3.57 2.35-6.78 5.8-7.66 24.2-6.16 42.2-27.95 42.2-54.04V64c0-35.35-28.66-64-64-64zm368 304c0-29.67-16.34-55.28-40.34-69.09 5.17-10.59 8.34-22.33 8.34-34.91 0-33.43-20.54-62-49.66-73.96 1.02-4.53 1.66-9.2 1.66-14.04 0-35.35-28.66-64-64-64-.75 0-1.45.2-2.2.22C422.74 20.55 397.87 0 368 0c-35.34 0-64 28.65-64 64v74.07c0 26.09 17.99 47.88 42.2 54.04 3.46.88 5.8 4.09 5.8 7.66v16.18c0 5.07-4.68 8.91-9.64 7.89-14.38-2.94-27.44-9.41-38.36-18.39V440c0 39.76 32.23 72 72 72 31.75 0 58.39-20.69 67.97-49.21 3.93.67 7.91 1.21 12.03 1.21 39.77 0 72-32.24 72-72 0-4.83-.52-9.54-1.42-14.11 29-12.01 49.42-40.55 49.42-73.89z"></path></svg>
 							</div>
 							<div class="tttoe__exp-bar">
 								<span id="${this.CssIds_.POINTS}" class="tttoe__exp-points animated">${this.expData.points}</span>
-								<div id="${this.CssIds_.EXP}" class="tttoe__experience" data-next-lvl="${this.Constant_.NEXT_LVL_TXT} ${this.setNextLevelExp()}"><span></span></div>
+								<div id="${this.CssIds_.EXP}" class="tttoe__experience" data-next-lvl="${this.Constant_.TEXTS.NEXT_LVL_TXT.RU} ${this.setNextLevelExp()}"><span></span></div>
 								<div id="level" class="tttoe__level">Уровень: <span class="animated">${this.level}</span></div>
 							</div>
 						</div>
@@ -512,7 +519,7 @@ class Game {
 								<h3>Об игре</h3>
 								<p class="tttoe__about-text">Крестики-нолики - игра нашего детства.
 								Играйте против компьютера, друга или по сети.
-								Получайте опыт, прокачивайте уровень и разблокируйте эпичные фишки в магазине.
+								Получайте опыт, прокачивайте уровень и открывайте эпичные фишки в магазине.
 								</p>
 								<div class="tttoe__affiliate"></div>
 								<p><b>Разработчик</b><br>Александр Радевич</p>
@@ -563,7 +570,7 @@ class Game {
 	showView() {
 		const container = document.getElementById( this.CssIds_.CONTAINER );
 		container.classList.toggle( this.CssClasses_.HIDDEN );
-		container.classList.toggle( this.CssClasses_.FADEIN_DEF );
+		container.classList.toggle( this.CssClasses_.ANIM.FADEIN_DEF );
 	}
 
 	fillScore() {
@@ -614,6 +621,8 @@ class Game {
 				const cell = document.createElement( 'td' );
 				if (prop === 'chip') {
 					cell.innerHTML = `<div class="tttoe__chip-ico tttoe__chip-ico--mini tttoe__${o[prop]}"></div>`;
+				} else if (prop === 'name') {
+					cell.innerHTML = `<span></span><span>${o[prop]}</span>`;
 				} else {
 					cell.textContent = o[prop];
 				}
@@ -677,7 +686,7 @@ class Game {
 				const winnerId = this.getPlayerId( winnerName );
 				const loserId = this.getPlayerId( loserName );
 				this.throwConfetti( document.getElementById( winnerId ), this.Constant_.CONFETTI_TIMING );
-				this.animate( document.getElementById( loserId ).querySelector( '.' + this.CssClasses_.AVATAR ), this.CssClasses_.SHAKE, this.Constant_.SHAK_TIMING );
+				this.animate( document.getElementById( loserId ).querySelector( '.' + this.CssClasses_.AVATAR ), this.CssClasses_.ANIM.SHAKE, this.Constant_.SHAK_TIMING );
 				this.setPoints( winnerName, true )
 					.then(
 						result => {
@@ -848,26 +857,50 @@ class Game {
 
 	}
 
+	getRandomCell() {
+		let ticked = false,
+			n;
+		do {
+			n = this.getRandomInt( 0, this.fieldSize );
+			ticked = this.isTickedCell( n );
+		} while (ticked === true);
+
+		return n + 1;
+	}
+
 	analysis() {
 		let result = {};
 		if (this.count < 2) {
-			let ticked = false,
-				n;
-			do {
-				n = this.getRandomInt( 0, this.fieldSize );
-				ticked = this.isTickedCell( n );
-			} while (ticked === true);
-			result.cell = n + 1;
+			result.cell = this.getRandomCell();
 		} else {
 			const o = this.filterCells();
 			const resultCompareComputer = this.makePotentialCells( o.emptyCells, o.computerCells, 'computer' );
 			const resultCompareHuman = this.makePotentialCells( o.emptyCells, o.humanCells, 'human' );
 
 			if (resultCompareComputer.cell) {
-				this.state = 'win';
-				result = resultCompareComputer;
+				if (this.difficulty === 'child' && this.count <= this.fieldSize - 2) {
+					const randCell = this.getRandomCell();
+					if (randCell === resultCompareComputer.cell) {
+						this.state = 'win';
+						result = resultCompareComputer;
+					} else {
+						result.cell = randCell;
+					}
+				} else {
+					this.state = 'win';
+					result = resultCompareComputer;
+				}
 			} else if (resultCompareHuman.cell) {
-				result.cell = this.difficulty === 'hard' ? resultCompareHuman.cell : this.chooseRandomCell( resultCompareComputer );
+				switch(this.difficulty) {
+					case 'hard':
+						result.cell = resultCompareHuman.cell;
+						break;
+					case 'easy':
+						result.cell = resultCompareComputer.length ? this.chooseRandomCell( resultCompareComputer ) : resultCompareHuman.cell;
+						break;
+					default:
+						result.cell = this.getRandomCell();
+				}
 			} else {
 				if (resultCompareComputer.length) {
 					result.cell = this.chooseRandomCell( resultCompareComputer );
@@ -1024,33 +1057,34 @@ class Game {
 	}
 
 	setPoints(winner,bonus) {
-		if (this.mode === 'vs_computer') {
-			if (!bonus) {
-				this.expData.points = winner === 'human' ? this.expData.points + this.expData.winPointsGame : this.expData.points && this.expData.points - this.losePoints;
-				this.expData.partiPoints += winner === 'human' ? this.expData.winPointsGame : 0;
-			} else {
-				this.expData.points = winner === 'human' ? this.expData.points + this.bonusPoints : this.expData.points - this.bonusLosePoints;
-				this.expData.points = Number.parseInt( this.expData.points );
-				return new Promise( (resolve,reject) => {
-					setTimeout( () => {
-						this.displayBonus( winner )
-							.then(
-								result => {
-									resolve();
-								}
-							);
-						this.expData.partiPoints = 0;
-					}, this.Constant_.MSG_ANIM_TIMING );
-				} );
+		return new Promise( (resolve,reject) => {
+			if (this.mode === 'vs_computer') {
+				if (!bonus) {
+					this.expData.points = winner === 'human' ? this.expData.points + this.expData.winPointsGame : this.expData.points && this.expData.points - this.losePoints;
+					this.expData.partiPoints += winner === 'human' ? this.expData.winPointsGame : 0;
+				} else {
+					this.expData.points = winner === 'human' ? this.expData.points + this.bonusPoints : this.expData.points - this.bonusLosePoints;
+					this.expData.points = Number.parseInt( this.expData.points );
+						setTimeout( () => {
+							this.displayBonus( winner )
+								.then(
+									result => {
+										resolve();
+									}
+								);
+							this.expData.partiPoints = 0;
+						}, this.Constant_.MSG_ANIM_TIMING );
+				}
+				if (this.gameWinPoints > 0) {
+					this.levelUp();
+				} else {
+					this.levelDown();
+				}
+				this.setCoins();
+				this.displayExperience();
 			}
-			if (this.gameWinPoints > 0) {
-				this.levelUp();
-			} else {
-				this.levelDown();
-			}
-			this.setCoins();
-			this.displayExperience();
-		}
+			setTimeout( () => resolve(), this.Constant_.MSG_ANIM_TIMING );
+		} );
 	}
 
 	setNextLevelExp() {
@@ -1128,9 +1162,9 @@ class Game {
 				this.expData.winPointsGame = points;
 				this.setPoints( 'human' )
 				this.expData.winPointsGame = tmp;
-				this.displayVolition( true, points );
+				this.displayVolition( true, points )
 			} else {
-				this.displayVolition();
+				this.displayVolition()
 			}
 		}
 	}
@@ -1144,7 +1178,7 @@ class Game {
 				this.sound.play( 'level' );
 			}, this.Constant_.SOUND_INTERVAL + 200 );
 			this.displayLevel();
-			document.getElementById( this.CssIds_.EXP ).dataset.nextLvl = this.Constant_.NEXT_LVL_TXT + this.expData.nextLevelExp;
+			document.getElementById( this.CssIds_.EXP ).dataset.nextLvl = this.Constant_.TEXTS.NEXT_LVL_TXT.RU + this.expData.nextLevelExp;
 		}
 	}
 
@@ -1154,7 +1188,7 @@ class Game {
 			this.expData.nextLevelExp = this.expData.currentLevelExp;
 			this.setCurrentLevelExp();
 			this.displayLevel( false );
-			document.getElementById( this.CssIds_.EXP ).dataset.nextLvl = this.Constant_.NEXT_LVL_TXT + this.expData.nextLevelExp;
+			document.getElementById( this.CssIds_.EXP ).dataset.nextLvl = this.Constant_.TEXTS.NEXT_LVL_TXT.RU + this.expData.nextLevelExp;
 		}
 	}
 
@@ -1347,16 +1381,16 @@ class Game {
 			}
 			elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
 			this.sound.play( 'swing' );
-			this.animate( elem.parentNode, this.CssClasses_.FADEIN_LEFT, 0, false )
+			this.animate( elem.parentNode, this.CssClasses_.ANIM.FADEIN_LEFT, 0, false )
 				.then(
 					result => {
 						setTimeout( () => {
 							this.sound.play( 'swing' );
-							this.animate( elem.parentNode, this.CssClasses_.FADEIN_RIGHT, this.Constant_.ANIM_TIMING )
+							this.animate( elem.parentNode, this.CssClasses_.ANIM.FADEIN_RIGHT, this.Constant_.ANIM_TIMING )
 								.then(
 									result => {
 										elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
-										elem.parentNode.classList.toggle( this.CssClasses_.FADEIN_LEFT );
+										elem.parentNode.classList.toggle( this.CssClasses_.ANIM.FADEIN_LEFT );
 									}
 								);
 							resolve();
@@ -1371,13 +1405,13 @@ class Game {
 		const coin = document.querySelectorAll( '.' + this.CssClasses_.COIN )[randomCoin ? 1 : 0];
 		coin.classList.remove( this.CssClasses_.HIDDEN );
 		if (animPoints) {
-			this.animate( document.getElementById( this.CssIds_.POINTS ), this.CssClasses_.FLASH, this.Constant_.ANIM_TIMING );
+			this.animate( document.getElementById( this.CssIds_.POINTS ), this.CssClasses_.ANIM.FLASH, this.Constant_.ANIM_TIMING );
 		}
 		if (sound) {
 			this.sound.play( 'coin' );
 		}
 		return new Promise( (resolve,reject) => {
-			this.animate( coin, this.CssClasses_.FLIP, this.Constant_.ANIM_TIMING )
+			this.animate( coin, this.CssClasses_.ANIM.FLIP, this.Constant_.ANIM_TIMING )
 				.then(
 					result => {
 						randomCoin && coin.remove();
@@ -1392,7 +1426,7 @@ class Game {
 		elem.textContent = this.level;
 		if (anim) {
 			setTimeout( () => {
-				this.animate( elem, this.CssClasses_.BOUNCE_IN, this.Constant_.ANIM_TIMING );
+				this.animate( elem, this.CssClasses_.ANIM.BOUNCE_IN, this.Constant_.ANIM_TIMING );
 			}, this.Constant_.SOUND_INTERVAL + 200 );
 		}
 	}
@@ -1401,13 +1435,17 @@ class Game {
 		const elem = document.getElementById( this.CssIds_.VOLITION );
 		elem.textContent = this.volitionData.value;
 		if (anim) {
-			this.sound.play( 'will' );
+			this.sound.play( 'will' )
+				.then(
+					result => {
+						this.displayBonus( null, points );
+					}
+				);
 			elem.nextElementSibling.style.fill = this.Constant_.VOLITION_COLOR;
-			this.animate( elem.nextElementSibling, this.CssClasses_.RUBBER_BAND, this.Constant_.ANIM_TIMING )
+			this.animate( elem.nextElementSibling, this.CssClasses_.ANIM.RUBBER_BAND, this.Constant_.ANIM_TIMING )
 				.then(
 					result => {
 						elem.nextElementSibling.style.fill = '#ffffff';
-						this.displayBonus( null, points );
 					}
 				);
 		}
@@ -1419,32 +1457,32 @@ class Game {
 			const confetti = wrp.querySelector( '.' + this.CssClasses_.CONFETTI_STATIC );
 			const btnAct = document.querySelector( '.' + this.CssClasses_.BUTTON_ACT );
 			const clone = elem.cloneNode();
-			clone.classList.add( this.CssClasses_.ANIM );
+			clone.classList.add( this.CssClasses_.ANIM.ANIMATED );
 			const span = document.createElement( 'span' );
 			span.textContent = this.Constant_.TEXTS.NEW_CHIP.RU;
-			span.className = this.CssClasses_.ANIM;
+			span.className = this.CssClasses_.ANIM.ANIMATED;
 			clone.appendChild( span );
 			wrp.appendChild( clone );
 
 			this.sound.play( 'swing' );
 			btnAct.disabled = true;
 			wrp.classList.toggle( this.CssClasses_.HIDDEN );
-			this.animate( confetti, this.CssClasses_.BOUNCE_IN_DOWN, this.Constant_.ANIM_TIMING, false );
-			this.animate( clone, this.CssClasses_.BOUNCE_IN_UP, this.Constant_.ANIM_TIMING, false )
+			this.animate( confetti, this.CssClasses_.ANIM.BOUNCE_IN_DOWN, this.Constant_.ANIM_TIMING, false );
+			this.animate( clone, this.CssClasses_.ANIM.BOUNCE_IN_UP, this.Constant_.ANIM_TIMING, false )
 				.then(
 					result => {
-						this.animate( span, this.CssClasses_.TADA, 0, false );
+						this.animate( span, this.CssClasses_.ANIM.TADA, 0, false );
 						this.sound.play( 'tada' )
 							.then(
 								result => {
 									this.sound.play( 'swing' );
-									this.animate( confetti, this.CssClasses_.BOUNCE_OUT_DOWN, this.Constant_.ANIM_TIMING )
+									this.animate( confetti, this.CssClasses_.ANIM.BOUNCE_OUT_DOWN, this.Constant_.ANIM_TIMING )
 										.then(
 											result => {
-												confetti.classList.remove( this.CssClasses_.BOUNCE_IN_DOWN );
+												confetti.classList.remove( this.CssClasses_.ANIM.BOUNCE_IN_DOWN );
 											}
 										);
-									this.animate( clone, this.CssClasses_.BOUNCE_OUT_UP, this.Constant_.ANIM_TIMING )
+									this.animate( clone, this.CssClasses_.ANIM.BOUNCE_OUT_UP, this.Constant_.ANIM_TIMING )
 										.then(
 											result => {
 												clone.remove();
@@ -1523,18 +1561,22 @@ class Game {
 
 	draw() {
 		if (this.count === this.fieldSize) {
-			this.sound.play( 'draw' );
 			this.displayMessage( 'draw' );
 			this.switchPartiPlayer();
-			this.setVolition();
-			setTimeout( () => {
-				this.restartParti()
-					.then(
-						result => {
-							this.makeMove();
-						}
-					);
-			}, this.Constant_.RESTART_PARTI );
+			this.sound.play( 'draw' )
+				.then(
+					result => {
+						this.setVolition()
+							setTimeout( () => {
+								this.restartParti()
+									.then(
+										result => {
+											this.makeMove();
+										}
+									);
+							}, this.Constant_.RESTART_PARTI );
+					}
+				)
 			return true;
 		}
 		return false;
@@ -1588,10 +1630,10 @@ class Game {
 			elem.removeEventListener( 'click', this.bindedHandler );
 			return new Promise( (resolve,reject) => {
 				this[flag] = !this[flag];
-				this.animate( elem, this.CssClasses_.FADE_OUT, this.Constant_.ANIM_TIMING )
+				this.animate( elem, this.CssClasses_.ANIM.FADE_OUT, this.Constant_.ANIM_TIMING )
 					.then(
 						result => {
-							elem.classList.remove( this.CssClasses_.FADEIN_DEF );
+							elem.classList.remove( this.CssClasses_.ANIM.FADEIN_DEF );
 							elem.classList.toggle( this.CssClasses_.HIDDEN );
 							resolve();
 						}
@@ -1599,7 +1641,7 @@ class Game {
 			} );
 		} else {
 			elem.classList.toggle( this.CssClasses_.HIDDEN );
-			this.animate( elem, this.CssClasses_.FADEIN_DEF, 0, false );
+			this.animate( elem, this.CssClasses_.ANIM.FADEIN_DEF, 0, false );
 			this[flag] = !this[flag];
 			return true;
 		}
@@ -1691,16 +1733,16 @@ class Game {
 
 	restartGame() {
 		const container = document.getElementById( this.CssIds_.CONTAINER );
-		this.animate( container, this.CssClasses_.FADE_OUT, this.Constant_.ANIM_TIMING )
+		this.animate( container, this.CssClasses_.ANIM.FADE_OUT, this.Constant_.ANIM_TIMING )
 			.then(
 				result => {
-					container.classList.remove( this.CssClasses_.FADEIN_DEF );
+					container.classList.remove( this.CssClasses_.ANIM.FADEIN_DEF );
 					container.classList.add( this.CssClasses_.HIDDEN );
 					container.remove();
 
 					const screen = new Screen();
 					screen.init();
-					screen.screen.classList.remove( this.CssClasses_.FADE_OUT );
+					screen.screen.classList.remove( this.CssClasses_.ANIM.FADE_OUT );
 					screen.screen.classList.remove( this.CssClasses_.HIDDEN );
 
 					const fullscreen = new ToggleScreen();

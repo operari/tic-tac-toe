@@ -53,3 +53,11 @@ main {
 *[hidden] {
   display: none !important;
 }
+
+input:focus {
+	outline: 0;
+}
+
+input:-webkit-autofill, textarea:-webkit-autofill, select:-webkit-autofill {
+	box-shadow: 0 0 0px 1000px white inset;
+}

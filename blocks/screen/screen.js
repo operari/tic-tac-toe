@@ -20,6 +20,8 @@ class Screen {
 			MODE: 'game_mode',
 			MAIN: 'game_main',
 			SIDE: 'game_side',
+			SIGN: 'sign_in',
+			DIFFICULTY: 'game__difficulty',
 			FIRST: 'first_move',
 			DICE: 'dice',
 			WRP: 'wrapper'
@@ -47,17 +49,23 @@ class Screen {
 					<div id="${this.CssIds_.MAIN}" class="screen__main animated">
 						<h1 class="screen__title">Крестики-нолики</h1>
 						<div class="screen__phrase">Классика игровой индустрии</div>
-
 						<div class="screen__robot">
 							<button type="button" id="${this.CssIds_.START}" class="screen__start">Начать игру</button>
 						</div>
 					</div>
-					<div id="game_mode" class="screen__mode animated is-hidden">
+					<div id="${this.CssIds_.MODE}" class="screen__mode animated is-hidden">
 						<h2 class="screen__display">Выберите режим игры:</h2>
 						<button class="bg-color--pink" data-mode="training" data-players='{ "player1": "human", "player2": "computer" }'>Тренировка</button>
 						<button class="bg-color--blue" data-mode="vs_computer" data-players='{ "player1": "human", "player2": "computer" }'>С компьютером</button>
 						<button class="bg-color--gold" data-mode="vs_human" data-players='{ "player1": "human", "player2": "human1" }'>С человеком</button>
 						<button class="bg-color--purple" data-mode="network" data-players='{ "player1": "human", "player2": "human1" }' disabled>По сети</button>
+					</div>
+					${this.signIn.create()}
+					<div id="${this.CssIds_.DIFFICULTY}" class="screen__difficulty animated is-hidden">
+						<h2 class="screen__display">Выберите сложность:</h2>
+						<button class="bg-color--green" data-difficulty="child">Ребенок</button>
+						<button class="bg-color--blue" data-difficulty="easy">Легко</button>
+						<button class="bg-color--red" data-difficulty="hard">Сложно</button>
 					</div>
 					<div id="${this.CssIds_.SIDE}" class="screen__side animated is-hidden">
 						<h2 class="screen__display">Выберите сторону:</h2>
@@ -110,6 +118,24 @@ class Screen {
 		return this.makeDiceWinner(n1, n2);
 	}
 
+	animWinnerDice(i) {
+		setTimeout( () => {
+			this.sound.play( 'flash' );
+			const dice = document.querySelectorAll( '.' + this.CssClasses_.DICE )[i];
+			dice.classList.remove( this.CssClasses_.ROTATEIN );
+			this.animate( dice, this.CssClasses_.FLASH );
+		}, this.Constant_.ANIM_TIMING );
+	}
+
+	hideDice() {
+		return new Promise( (resolve,reject) => {
+			setTimeout( () => {
+				document.getElementById( this.CssIds_.DICE ).querySelector('button').click();
+				resolve();
+			}, this.Constant_.DICE_HIDE_TIMING );
+		} );
+	}
+
 	animate(el,cls) {
 		if (el) {
 			el.classList.add( cls );
@@ -122,7 +148,7 @@ class Screen {
 		return false;
 	}
 
-	toggleView(id1, id2) {
+	toggleView(id1,id2) {
 		const el1 = document.getElementById( id1 );
 		const el2 = document.getElementById( id2 );
 		if (el1) {
@@ -136,7 +162,7 @@ class Screen {
 								this.animate( el2, !this.dice ? this.CssClasses_.FADEIN : this.CssClasses_.FADEIN_DEF )
 									.then(
 										result => {
-											resolve(el2);
+											resolve( el2 );
 										}
 									);
 							} else {
@@ -199,34 +225,33 @@ class Screen {
 		const btnStart = document.getElementById( this.CssIds_.START );
 		const arrIds = [this.CssIds_.MAIN, this.CssIds_.MODE, this.CssIds_.SIDE, this.CssIds_.DICE];
 
-		return new Promise( (resolve, reject) => {
-			( function rec(el, arr) {
+		return new Promise( (resolve,reject) => {
+			( function rec(el,arr) {
 				if (arr.length) {
 					if (arr.length === 1 && this.dice) {
 						const i = this.throwDice();
-						setTimeout( () => {
-							this.sound.play( 'flash' );
-							const dice = document.querySelectorAll( '.' + this.CssClasses_.DICE )[i];
-							dice.classList.remove( this.CssClasses_.ROTATEIN );
-							this.animate( dice, this.CssClasses_.FLASH );
-						}, this.Constant_.ANIM_TIMING );
-						setTimeout( () => {
-							document.getElementById( this.CssIds_.DICE ).querySelector('button').click();
-							resolve();
-						}, this.Constant_.DICE_HIDE_TIMING );
+						this.animWinnerDice( i );
+						this.hideDice()
+							.then(
+								result => resolve()
+							);
 					}
 					el.addEventListener( 'click', (e) => {
 						const target = e.target;
-						if (target.tagName !== "BUTTON") return;
+						if (target.tagName !== "BUTTON" || /sign/.test( target.className )) return;
 						if (target.id && target.id === this.CssIds_.START) {
 							const fullscreen = new ToggleScreen();
-							setTimeout( function() {
-								fullscreen.open();
-							}, this.Constant_.FULLSCREEN_TIMING );
+							setTimeout( () => fullscreen.open(), this.Constant_.FULLSCREEN_TIMING );
+						}
+						if (target.dataset.mode === 'training') {
+							arr.splice( 1, 0, this.CssIds_.DIFFICULTY );
+						}
+						if (target.dataset.mode === 'vs_computer' || target.dataset.mode === 'network') {
+							arr.splice( 1, 0, this.CssIds_.SIGN );
 						}
 						this.sound.play( 'click' );
 						this.switchLastScreen( target, arr );
-						this.makeOptions( target, ['side', 'run', 'mode', 'players'] );
+						this.makeOptions( target, ['side', 'run', 'mode', 'players', 'difficulty'] );
 						this.toggleView( arr[0], arr[1] )
 							.then(
 								result => {
@@ -249,7 +274,9 @@ class Screen {
 
 	init() {
 		var handler = (e) => {
+			this.signIn = new SignIn();
 			this.makeView();
+			this.signIn.init();
 			this.sound = new Sound();
 			this.options.sound = this.sound;
 			this.controller()
@@ -258,7 +285,6 @@ class Screen {
 						this.screen.classList.toggle( this.CssClasses_.HIDDEN );
 						this.screen.classList.toggle( this.CssClasses_.FADEOUT );
 						document.getElementById( this.CssIds_.SCREEN ).remove();
-
 						const game = new Game( this.options );
 						game.init()
 							.then(

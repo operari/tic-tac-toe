@@ -1,0 +1,91 @@
+/**
+ *
+ * sign-in
+ *
+ */
+
+.sign-in {
+	text-align: center;
+	&.is-hidden {
+		display: none;
+	}
+	&__row {
+		margin: 0 0 10px 0;
+	}
+	&__input-field {
+		position: relative;
+		display: inline-block;
+	}
+	&__input-error {
+		position: relative;
+		top: 4px;
+		margin-top: 3px;
+		color: nth($red, 1);
+		&.is-hidden {
+			display: none;
+		}
+	}
+	&__view-pass {
+		position: absolute;
+		z-index: 1;
+		top: 19px;
+		right: 16px;
+		width: $sign-eye-size;
+		height: $sign-eye-size;
+		margin: 0;
+		padding: 0;
+		background-size: cover;
+		background: url(../blocks/signIn/eye.svg) no-repeat;
+		&:active {
+			position: absolute;
+			top: 21px;
+		}
+	}
+	label {
+		font-size: $sign-label-f-size;
+		position: absolute;
+		z-index: 0;
+		top: 17px;
+		left: 26px;
+		transition: all .3s ease-out;
+		&.is-focused {
+			font-size: $sign-label-f-size-focused;
+			margin-top: -10px;
+		}
+	}
+	&__name,
+	&__password {
+		font-family: $font-family-default;
+		font-size: $sign-input-f-size;
+		font-weight: 500;
+		line-height: $sign-input-f-size;
+		position: relative;
+		z-index: 1;
+		width: $sign-input-width;
+		height: $sign-input-height;
+		padding: 0 10px;
+		text-align: center;
+		border: $sign-input-border;
+		border-radius: $sign-input-border-radius;
+		background-color: transparent;
+		&:focus {
+			& + label {
+				font-size: $sign-label-f-size-focused;
+				margin-top: -10px;
+			}
+		}
+	}
+	&__name {
+		border-color: nth($green, 4);
+	}
+	&__password {
+		font-size: $sign-password-f-size;
+		line-height: $sign-input-f-size;
+		border-color: nth($gold, 4);
+		@at-root {
+			input[type="text"]#{&} {
+				font-size: $sign-input-f-size;
+			}
+		}
+	}
+}

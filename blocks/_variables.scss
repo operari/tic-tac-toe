@@ -116,6 +116,8 @@ $st-table-offset-top: 20px;
 $st-th-bg-color: #64b5f6;
 $st-td-bg-color: #e3f2fd;
 $st-td-border-color: white;
+$st-numeric-width: 40px;
+$st-numeric-padding-left: 15px;
 
 /*----------  pagination  ----------*/
 
@@ -157,3 +159,16 @@ $about-font-size: 18px;
 $about-text-line-height: 1.8;
 $about-text-padding: 15px 29px 0;
 $about-affiliate-size: 22px;
+
+/*----------  signIn  ----------*/
+
+$sign-eye-size: 30px;
+$sign-label-f-size: 23px;
+$sign-label-f-size-focused: 13px;
+$sign-input-f-size: 23px;
+$sign-input-width: 200px;
+$sign-input-height: 58px;
+$sign-input-border: 5px solid white;
+$sign-input-border-radius: 100px;
+$sign-password-f-size: 38px;
+
