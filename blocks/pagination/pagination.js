@@ -1,7 +1,20 @@
+/** Class representing a pagination. */
 class Pagination {
+	/**
+	 * Creates a new pagination.
+	 *
+	 * @param  {Number} allElements  Quantity all elements for dislplay.
+	 * @param  {Number} limitPerPage Quantity elements displayed on page.
+	 */
 	constructor(allElements,limitPerPage) {
 		this.allElements = allElements;
 		this.limitPerPage = limitPerPage;
+		/**
+		 * Store strings for class names defined by this component that are used in JavaScript.
+		 *
+		 * @enum {string}
+		 * @private
+		*/
 		this.__proto__.CssClasses_ = {
 			BLOCK: 'pagination',
 			CONTAINER: 'pagination__marked-list',
@@ -13,14 +26,28 @@ class Pagination {
 		};
 	}
 
-	get countPages() {
+	/**
+	 * Calculate amount elements for display.
+	 *
+	 * @return {Number} Elements for display.
+	 * @private
+	 */
+	get countPages_() {
 		return this.allElements / this.limitPerPage <= 1 ? 1 : this.allElements / this.limitPerPage;
 	}
 
+	// Public methods.
+
+	/**
+	 * Creates pagination markup.
+	 *
+	 * @return {string} Html markup.
+	 * @public
+	 */
 	create() {
 		var fill = () => {
 			let html = '';
-			for (let i = 1; i <= this.countPages; i++) {
+			for (let i = 1; i <= this.countPages_; i++) {
 				html += `<li class="${this.CssClasses_.LIST}"><a href="#" class="${this.CssClasses_.MIX_ACTION} ${this.CssClasses_.LINK} ${i === 1 ? this.CssClasses_.ACTIVE : ''}">${i}</a></li>`;
 			}
 			return html;
@@ -35,6 +62,11 @@ class Pagination {
 		return html;
 	}
 
+	/**
+	 * Display the active pagination item.
+	 *
+	 * @public
+	 */
 	toggleActive() {
 		const block = document.querySelector( '.' + this.CssClasses_.BLOCK );
 
@@ -48,10 +80,6 @@ class Pagination {
 		};
 
 		block.addEventListener( 'click', handler );
-	}
-
-	init() {
-		this.create();
 	}
 
 }

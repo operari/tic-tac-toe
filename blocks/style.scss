@@ -1,3 +1,6 @@
+// Override levels
+
+// Lib blocks
 @import "resets/resets";
 @import "animation/animation";
 @import "layout/layout";
@@ -6,7 +9,13 @@
 @import "dice/dice";
 @import "screen/screen";
 @import "signIn/sign_in";
+@import "score/score";
+@import "experience/experience";
+@import "coins/coins";
 @import "game/game";
 @import "sound/sound";
 @import "menu/menu";
 @import "pagination/pagination";
+
+// Common blocks
+@import "../common.blocks/style.scss";

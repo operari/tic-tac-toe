@@ -80,13 +80,6 @@ $coin-edge: nth($gold, 3);
 
 $menu-bar-ico-size: 43px;
 
-/*----------  experience  ----------*/
-
-$exp-width: 200px;
-$exp-height: 30px;
-$exp-border-size: 4px;
-$exp-color: nth($green, 1);
-
 /*----------  bonus  ----------*/
 
 $bonus-msg-font-size: 25px;
@@ -109,6 +102,27 @@ $btn-disabled-bg-color: nth($grey, 4);
 
 $popup-width: 470px;
 $popup-height: 700px;
+
+
+/*----------  experience  ----------*/
+
+$exp-width: 200px;
+$exp-height: 30px;
+$exp-border-size: 4px;
+$exp-color: nth($green, 1);
+$exp-points-font-size: 22px;
+$exp-points-color: white;
+$exp-help-font-size: 12px;
+$exp-level-font-size: 22px;
+$exp-level-color: white;
+$exp-bonus-font-size: 130px;
+$exp-bonus-text-shadow: 1px 1px 1px black;
+
+/*----------  volition  ----------*/
+
+$vol-font-size: 14px;
+$vol-count-font-size: 22px;
+$vol-count-color: white;
 
 /*----------  statistics  ----------*/
 

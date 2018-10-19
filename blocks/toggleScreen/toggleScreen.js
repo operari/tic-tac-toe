@@ -1,8 +1,20 @@
+/** Class representing toggle screen of element. */
 class ToggleScreen {
+	/**
+	 * Creates a new toggle.
+	 * @param  {Element} elem Element for toggle.
+	 */
 	constructor(elem) {
 		this.elem = elem || document.documentElement;
 	}
 
+	// Public methods.
+
+	/**
+	 * Open item in full screen
+	 *
+	 * @public
+	 */
 	open() {
 		if (this.elem.requestFullscreen) {
 			this.elem.requestFullscreen();
@@ -16,6 +28,11 @@ class ToggleScreen {
 
 	}
 
+	/**
+	 * Exit full screen
+	 *
+	 * @public
+	 */
 	close() {
 		if (document.exitFullscreen) {
 			document.exitFullscreen();

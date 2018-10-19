@@ -1,13 +1,18 @@
-const test = false;
+const test = true;
 
+/** Class representing a game. */
 class Game {
+	/**
+	 * Creates a new game.
+	 *
+	 * @param {Object} options Rewrite options.
+	 */
 	constructor(options) {
 		this.fieldSize = 9;
 		this.run = 'human';
-		this.mode = 'training';
+		this.mode = 'vs_computer';
 		this.parti = 1;
 		this.difficulty = 'child';
-		this.store = {};
 		this.openMenu = false;
 		this.openChips = false;
 		this.animateChips = true;
@@ -31,43 +36,7 @@ class Game {
 		this.fieldCells = {};
 		this.count = 0;
 		this.state = '';
-		this.level = 1;
-		this.levelGrow = {
-			value: 500,
-			increase: 50,
-			bonusPercent: 20,
-			bonusLosePercent: 5
-		};
-		this.expData = {
-			winPointsGame: 100,
-			losePercent: 20,
-			points: 0,
-			partiPoints: 0,
-			currentLevelExp: 0,
-			nextLevelExp: 0
-		};
-		this.coinsData = {
-			coins: 0,
-			getExpInterval: 500,
-			getCoins: 1,
-			thresholdExp: 0
-		};
-		this.volitionData = {
-			value: 0,
-			interval: 10,
-			points: 99,
-			increasePercent: 10
-		};
-		this.randomCoinData = {
-			chancePercent: 30,
-			added: false,
-			index: -1
-		};
-		Object.defineProperty( this.coinsData, 'needExp', {
-			value: this.coinsData.getExpInterval,
-			writable: true
-		} );
-		this.score = {
+		this.store = {
 			0: {
 				name: 'star',
 				cost: 5,
@@ -170,10 +139,17 @@ class Game {
 			fields: {
 				ru: ['Ник', 'Воля', 'Монеты', 'Фишка', 'Уровень']
 			},
-			limit: 10
+			limit: 1
 		};
+		/**
+		 * Store strings for class names defined by this component that are used in JavaScript.
+		 *
+		 * @enum {string}
+		 * @private
+		*/
 		this.__proto__.CssClasses_ = {
 			FIELD: 'tttoe',
+			INNER: 'tttoe__inner',
 			CELL: 'tttoe__cell',
 			TICK: 'tttoe__tick',
 			STORE: 'tttoe__store',
@@ -184,105 +160,98 @@ class Game {
 			CHIP_PICK: 'tttoe__chip--pick',
 			WIN: 'tttoe__cell--winner',
 			HIDDEN: 'is-hidden',
-			MSG: 'message',
 			AVATAR: 'tttoe__avatar',
 			MENU: 'tttoe__menu',
-			COIN: 'tttoe__coin',
 			BUTTON_ACT: 'tttoe__button-action',
 			LOCK: 'tttoe__chip-lock',
 			UNLOCK_CHIPS: 'tttoe__chips-unlock',
 			CONFETTI_STATIC: 'tttoe__chips-confetti',
 			STATISTICS: 'tttoe__statistics',
 			ABOUT: 'tttoe__about',
-			ANIM: {
-				ANIMATED: 'animated',
-				SHAKE: 'shake',
-				FADEIN_DEF: 'fadeInDef',
-				FADE_OUT: 'fadeOut',
-				FADEIN_LEFT: 'fadeInLeftBig',
-				FADEIN_RIGHT: 'fadeOutRightBig',
-				FLIP: 'flip',
-				FLASH: 'flash',
-				RUBBER_BAND: 'rubberBand',
-				BOUNCE_IN: 'bounceIn',
-				BOUNCE_IN_UP: 'bounceInUp',
-				BOUNCE_OUT_UP: 'bounceOutUp',
-				BOUNCE_IN_DOWN: 'bounceInDown',
-				BOUNCE_OUT_DOWN: 'bounceOutDown',
-				TADA: 'tada'
-			},
+			ANIMATED: 'animated'
 		};
+		/**
+		 * Store strings for identifiers defined by this component that are used in JavaScript.
+		 *
+		 * @enum {string}
+		 * @private
+		*/
 		this.__proto__.CssIds_ = {
 			APP: 'game',
 			CURSOR: 'comp_cursor',
 			WRP: 'wrapper',
 			CONTAINER: 'container',
-			MSG: 'message',
 			BAR: 'menu_bar',
 			CHIPS_BAR: 'chips_bar',
 			RESUME: 'resume',
 			MAIN_MENU: 'main_menu',
+			/** @type {Object} */
 			HOTKEYS: {
 				'f10': 'menu',
 				'f': 'chips'
 			},
-			LVL: 'level',
-			POINTS: 'points',
-			EXP: 'experience',
-			BONUS: 'bonus',
-			COINS: 'coins',
 			FIELD_WRP: 'field_wrp',
-			VOLITION: 'volition'
 		};
+		/**
+		 * Store constants in one place so they can be updated easily.
+		 *
+		 * @enum {(string | number)}
+		 * @private
+		*/
 		this.__proto__.Constant_ = {
 			SHAKE_TIMING: 2000,
 			CONFETTI_TIMING: 2000,
 			TICK_TIMING: 500,
-			MSG_ANIM_TIMING: 1500,
 			ANIM_TIMING: 1000,
-			BONUS_TIMING: 2000,
-			SOUND_INTERVAL: 500,
 			RESTART_PARTI: 1000,
-			VOLITION_COLOR: '#545bb0',
-			TEXTS: {
-				NEW_CHIP: {
-					RU: 'Новая фишка!'
-				},
-				NEXT_LVL_TXT: {
-					RU: 'След. ур.: '
-				},
-				WILL: {
-					RU: 'Воля'
-				}
-			}
+			MOVE_ANIMATION: 1000
+		};
+		/**
+		 * Store texts in one place so they can be updated easily.
+		 *
+		 * @enum {(string | number)}
+		 * @private
+		*/
+		this.__proto__.Texts_ = {
+			NEW_CHIP: {	RU: 'Новая фишка!' }
 		};
 		Object.assign( this, options );
 		this.partiRun = this.run;
-		console.log(this.difficulty);
 	}
 
-	countAxesValues() {
+	/**
+	 * Creates matrices of calculated values.
+	 *
+	 * @private
+	 */
+	countAxesValues_() {
 		const axes = ['x', 'y', 'z'];
-		const cells = this.doCells();
+		const cells = this.doCells_();
 		const sqrt = Math.sqrt( this.fieldSize );
 
 		for (let i = 0; i < axes.length; i++) {
-			const matrix = this.doMatrix( cells, sqrt, axes[i] );
+			const matrix = this.doMatrix_( cells, sqrt, axes[i] );
 			this.numberingAxes[axes[i]] = matrix;
 
-			const matrix1 = this.doMatrix( cells, sqrt, axes[i] );
-			this.computeCells( matrix1 );
+			const matrix1 = this.doMatrix_( cells, sqrt, axes[i] );
+			this.computeCells_( matrix1 );
 			this.multiplyingAxes[axes[i]] = matrix1.reduce( (a,b) => a.concat( b ) );
 
-			const matrix2 = this.doMatrix( cells, sqrt, axes[i] );
-			this.additionAxes[axes[i]] = this.sumAxissRows( matrix2 );
-			this.computeCells( matrix2, false );
+			const matrix2 = this.doMatrix_( cells, sqrt, axes[i] );
+			this.additionAxes[axes[i]] = this.sumAxissRows_( matrix2 );
+			this.computeCells_( matrix2, false );
 			this.additionAxes[axes[i]].forEach( (v,i) => v[Object.keys( v )[0]] = matrix2[i] );
 		}
 
 	}
 
-	doCells() {
+	/**
+	 * Creates game cells.
+	 *
+	 * @return {Array} Cells.
+	 * @private
+	 */
+	doCells_() {
 		const cells = [];
 
 		for (let i = 1; i <= this.fieldSize; i++) {
@@ -292,7 +261,16 @@ class Game {
 		return cells;
 	}
 
-	doMatrix(arr,sqrt,axis) {
+	/**
+	 * Creates a matrix of cell values.
+	 *
+	 * @param  {Array} arr  Cells.
+	 * @param  {Number} sqrt Square root of field size.
+	 * @param  {String} axis Counting axis.
+	 * @return {Array} Matrix.
+	 * @private
+	 */
+	doMatrix_(arr,sqrt,axis) {
 
 		const matrix = [];
 		let row = [];
@@ -336,7 +314,14 @@ class Game {
 		return matrix;
 	}
 
-	computeCells(matrix,mult = true) {
+	/**
+	 * Computes cells of matrix.
+	 *
+	 * @param  {Array}  matrix Matrix of cell values.
+	 * @param  {Boolean} mult Arithmetic operation.
+	 * @private
+	 */
+	computeCells_(matrix,mult = true) {
 		matrix.forEach( function(v,i,arr) {
 			let row = [];
 			(function rec(arr) {
@@ -358,7 +343,13 @@ class Game {
 		} );
 	}
 
-	sumAxissRows(matrix) {
+	/**
+	 * Calculates the sum of the rows of each axis.
+	 *
+	 * @param  {Array} matrix Matrix of cell values.
+	 * @private
+	 */
+	sumAxissRows_(matrix) {
 		return matrix.map( function(arr) {
 			const sum = arr.reduce( (a,b) => a + b ),
 				o = {};
@@ -368,7 +359,12 @@ class Game {
 		} );
 	}
 
-	makeFieldCells() {
+	/**
+	 * Writes state of each cell.
+	 *
+	 * @private
+	 */
+	makeFieldCells_() {
 		for (let i = 0; i < this.fieldSize; i++) {
 			this.fieldCells[i] = {
 				ticked: false,
@@ -379,7 +375,13 @@ class Game {
 		this.fieldCells.length = this.fieldSize;
 	}
 
-	makeViewField() {
+	/**
+	 * Creates this visual part of game field.
+	 *
+	 * @return {Element} [description]
+	 * @private
+	 */
+	makeViewField_() {
 		const field = document.createElement( 'table' );
 		const sqrt = Math.sqrt( this.fieldSize );
 
@@ -415,32 +417,21 @@ class Game {
 		return this.names[this.players.player2];
 	}
 
-	get losePoints() {
-		return Number.parseInt( this.expData.winPointsGame * this.expData.losePercent / 100 );
-	}
-
-	get bonusPoints() {
-		return this.expData.partiPoints * this.levelGrow.bonusPercent / 100;
-	}
-
-	get bonusLosePoints() {
-		return this.expData.partiPoints * this.levelGrow.bonusLosePercent / 100;
-	}
-
-	get gameWinPoints() {
-		return this.expData.points - this.expData.currentLevelExp;
-	}
-
-	makeView() {
-		this.pagination = new Pagination( this.statistics.data.length, this.statistics.limit );
+	/**
+	 * Creates the visual part of the game.
+	 *
+	 * @return {Promise} Promise
+	 * @private
+	 */
+	makeView_() {
 		const html = `
-			<div id="container" class="layout__container is-hidden animated">
+			<div id="container" class="layout__container is-hidden">
 				<div id="game" class="layout__game">
 					<div class="layout__header">
 						<div class="row">
 							<div class="tttoe__coins">
-								<div class="tttoe__coin animated"></div>
-								<div id="${this.CssIds_.COINS}" class="tttoe__coins-count">${this.coinsData.coins}</div>
+								<div class="tttoe__coin"></div>
+								<div id="${this.coins.CssIds_.COINS}" class="tttoe__coins-count">${this.coins.coinsData.coins}</div>
 							</div>
 							<div class="row">
 								<div id="chips_bar" class="tttoe__chips-bar">
@@ -457,22 +448,7 @@ class Game {
 								</div>
 							</div>
 						</div>
-						<div id="status" class="tttoe__status row">
-							<div id="player1" class="tttoe__player">
-								<div class="tttoe__avatar">
-									<img src="blocks/game/${this.players.player1}.png" alt="" />
-								</div>
-								<div class="tttoe__name">${this.playerFirstName}</div>
-								<div class="tttoe__store">0</div>
-							</div>
-							<div id="player2" class="tttoe__player">
-								<div class="tttoe__avatar">
-									<img src="blocks/game/${this.players.player2}.png" alt="" />
-								</div>
-								<div class="tttoe__name">${this.playerSecondName}</div>
-								<div class="tttoe__store">0</div>
-							</div>
-						</div>
+						${this.score.create()}
 					</div>
 					<div class="layout__middle">
 						<div id="${this.CssIds_.FIELD_WRP}" class="tttoe__field-wrp row row--center">
@@ -482,29 +458,19 @@ class Game {
 						</div>
 					</div>
 					<div class="layout__footer">
-						<div class="row row--right">
-							<div class="tttoe__volition" data-title="${this.Constant_.TEXTS.WILL.RU}">
-								<div id="volition" class="tttoe__volition-count">0</div>
-								<svg class="tttoe__volition-ico animated" width="42" height="42" fill="#ffffff" aria-hidden="true" data-prefix="fas" data-icon="brain" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M208 0c-29.87 0-54.74 20.55-61.8 48.22-.75-.02-1.45-.22-2.2-.22-35.34 0-64 28.65-64 64 0 4.84.64 9.51 1.66 14.04C52.54 138 32 166.57 32 200c0 12.58 3.16 24.32 8.34 34.91C16.34 248.72 0 274.33 0 304c0 33.34 20.42 61.88 49.42 73.89-.9 4.57-1.42 9.28-1.42 14.11 0 39.76 32.23 72 72 72 4.12 0 8.1-.55 12.03-1.21C141.61 491.31 168.25 512 200 512c39.77 0 72-32.24 72-72V205.45c-10.91 8.98-23.98 15.45-38.36 18.39-4.97 1.02-9.64-2.82-9.64-7.89v-16.18c0-3.57 2.35-6.78 5.8-7.66 24.2-6.16 42.2-27.95 42.2-54.04V64c0-35.35-28.66-64-64-64zm368 304c0-29.67-16.34-55.28-40.34-69.09 5.17-10.59 8.34-22.33 8.34-34.91 0-33.43-20.54-62-49.66-73.96 1.02-4.53 1.66-9.2 1.66-14.04 0-35.35-28.66-64-64-64-.75 0-1.45.2-2.2.22C422.74 20.55 397.87 0 368 0c-35.34 0-64 28.65-64 64v74.07c0 26.09 17.99 47.88 42.2 54.04 3.46.88 5.8 4.09 5.8 7.66v16.18c0 5.07-4.68 8.91-9.64 7.89-14.38-2.94-27.44-9.41-38.36-18.39V440c0 39.76 32.23 72 72 72 31.75 0 58.39-20.69 67.97-49.21 3.93.67 7.91 1.21 12.03 1.21 39.77 0 72-32.24 72-72 0-4.83-.52-9.54-1.42-14.11 29-12.01 49.42-40.55 49.42-73.89z"></path></svg>
-							</div>
-							<div class="tttoe__exp-bar">
-								<span id="${this.CssIds_.POINTS}" class="tttoe__exp-points animated">${this.expData.points}</span>
-								<div id="${this.CssIds_.EXP}" class="tttoe__experience" data-next-lvl="${this.Constant_.TEXTS.NEXT_LVL_TXT.RU} ${this.setNextLevelExp()}"><span></span></div>
-								<div id="level" class="tttoe__level">Уровень: <span class="animated">${this.level}</span></div>
-							</div>
-						</div>
+						${this.experience.create()}
 					</div>
 					<div class="layout__popups">
-						<div class="tttoe__chips layout__substrate animated is-hidden" data-flag="openChips">
+						<div class="tttoe__chips layout__substrate is-hidden" data-flag="openChips">
 							<div class="tttoe__chips-inner layout__popup">
 								<h3>Магазин</h3>
 								<div class="row row--left">
-									${this.fillScore()}
+									${this.fillStore()}
 								</div>
 								<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>
 							</div>
 						</div>
-						<div class="tttoe__statistics layout__substrate animated is-hidden">
+						<div class="tttoe__statistics layout__substrate is-hidden">
 							<div class="tttoe__statistics-inner layout__popup">
 								<h3>Статистика</h3>
 								<div class="row row--left">
@@ -514,7 +480,7 @@ class Game {
 								<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>
 							</div>
 						</div>
-						<div class="tttoe__about layout__substrate animated is-hidden">
+						<div class="tttoe__about layout__substrate is-hidden">
 							<div class="tttoe__about-inner layout__popup">
 								<h3>Об игре</h3>
 								<p class="tttoe__about-text">Крестики-нолики - игра нашего детства.
@@ -527,7 +493,7 @@ class Game {
 								<button class="tttoe__chips-close tttoe__button-action ml-button--dim" type="button"></button>
 							</div>
 						</div>
-						<div class="tttoe__menu layout__substrate animated is-hidden" data-flag="openMenu">
+						<div class="tttoe__menu layout__substrate is-hidden" data-flag="openMenu">
 							<div class="game-menu">
 								<button id="${this.CssIds_.RESUME}" class="game-menu__action tttoe__button-action bg-color--blue">Вернуться</button>
 								<button class="game-menu__action tttoe__button-action bg-color--pink" data-popup="${this.CssClasses_.STATISTICS}">Статистика</button>
@@ -536,18 +502,18 @@ class Game {
 							</div>
 						</div>
 						<div class="tttoe__chips-unlock is-hidden">
-							<div class="tttoe__chips-confetti animated">
+							<div class="tttoe__chips-confetti">
 								<img src="blocks/game/confetti.png" alt="" />
 							</div>
 						</div>
-						<div id="message" class="tttoe__message animated animated--msg"></div>
-						<div class="tttoe__bonus animated is-hidden"><div id="bonus"></div></div>
+						<div id="message" class="tttoe__message animated--msg is-hidden"></div>
+						${this.experience.createBonus()}
 					</div>
 				</div>
 			</div>
 			`;
 
-		const field = this.makeViewField();
+		const field = this.makeViewField_();
 
 		return new Promise( (resolve,reject) => {
 			var handler = (e) => {
@@ -555,8 +521,7 @@ class Game {
 				wrapper.insertAdjacentHTML( 'beforeend', html );
 				this.fieldElement = document.getElementById( this.CssIds_.APP );
 				document.getElementById( this.CssIds_.FIELD_WRP ).firstElementChild.appendChild( field );
-				this.appendRandomCoin();
-				this.showView();
+				this.showView_();
 				resolve();
 			}
 			if (document.readyState === 'complete') {
@@ -567,17 +532,21 @@ class Game {
 		} );
 	}
 
-	showView() {
+	/**
+	 * Displays view.
+	 *
+	 * @private
+	 */
+	showView_() {
 		const container = document.getElementById( this.CssIds_.CONTAINER );
-		container.classList.toggle( this.CssClasses_.HIDDEN );
-		container.classList.toggle( this.CssClasses_.ANIM.FADEIN_DEF );
+		this.anim.animate( container, 'fading_entrances_0' );
 	}
 
-	fillScore() {
+	fillStore() {
 		let html = '';
 
-		for (let i = 0; i < this.score.length; i++) {
-			const elem = this.score[i];
+		for (let i = 0; i < this.store.length; i++) {
+			const elem = this.store[i];
 			const chip =
 				`<button class="tttoe__chip tttoe__button-action ml-button--dim" data-index="${i}" ${elem.lock ? 'disabled' : ''}>
 					<div class="tttoe__chip-ico tttoe__${elem.name}"></div>
@@ -635,7 +604,12 @@ class Game {
 		return table.outerHTML;
 	}
 
-	makeMove() {
+	/**
+	 * Makes move.
+	 *
+	 * @private
+	 */
+	makeMove_() {
 		switch (this.mode) {
 			case 'vs_human':
 				if (this.run === 'human') {
@@ -653,190 +627,62 @@ class Game {
 					this.doComputer();
 				}
 		}
-
+		this.score.highlightAvatar( this.getPlayerId_( this.run ), true );
 	}
 
-	highlightMove() {
-		const props = Object.keys( this.players );
-		const values = Object.values( this.players );
-
-		var highlight = (id,add = true) => {
-			const elem = document.getElementById( id ).querySelector( '.' + this.CssClasses_.AVATAR );
-			elem.classList[add ? 'add' : 'remove']( this.CssClasses_.AVATAR + '--highlight' );
-		};
-
-		let i = values.findIndex( v => v === this.run );
-		highlight( props[i] );
-
-		i = values.findIndex( v => v !== this.run );
-		highlight( props[i], false );
-
-	}
-
-	actionsAfterWin(comb,axis) {
+	/**
+	 * Action after party.
+	 *
+	 * @param  {Array} comb Row combination of a parti winner.
+	 * @param  {string} axis The axis of a parti winner.
+	 * @return {Promise} Promise.
+	 */
+	actionsAfterPartiOver_(comb,axis) {
 		return new Promise( (resolve,reject) => {
-			this.setStore();
-			this.setPoints( this.run );
-			this.displayWinner( comb, axis );
-			this.switchPartiPlayer();
-			const winnerName = this.getGameWinner();
+			this.score.setScore( this.run, this.getPlayerId_( this.run ) );
+			this.experience.setPoints( this.run );
+			this.displayWinnerThrough( comb, axis );
+			this.switchPartiPlayer_();
+			const winnerName = this.getGameWinner_();
 			if (winnerName) {
-				this.displayMessage( winnerName );
-				const loserName = this.getPartiLoser( winnerName );
-				const winnerId = this.getPlayerId( winnerName );
-				const loserId = this.getPlayerId( loserName );
+				this.experience.displayPartiResultMessage( winnerName );
+				const loserName = this.getGameLoser_( winnerName );
+				const winnerId = this.getPlayerId_( winnerName );
+				const loserId = this.getPlayerId_( loserName );
 				this.throwConfetti( document.getElementById( winnerId ), this.Constant_.CONFETTI_TIMING );
-				this.animate( document.getElementById( loserId ).querySelector( '.' + this.CssClasses_.AVATAR ), this.CssClasses_.ANIM.SHAKE, this.Constant_.SHAK_TIMING );
-				this.setPoints( winnerName, true )
+				this.anim.animate( document.getElementById( loserId ).querySelector( '.' + this.CssClasses_.AVATAR ), 'attention_seekers_11', true, this.Constant_.SHAKE_TIMING );
+				this.experience.setPoints( winnerName, true )
 					.then(
 						result => {
-							this.resetStores();
+							this.score.resetScore();
 							resolve();
 						}
 					);
 			} else {
-				setTimeout( () => resolve(), this.Constant_.RESTART_PARTI );
+				this.sound.play( 'point' );
+				setTimeout( _ => resolve(), this.Constant_.RESTART_PARTI );
 			}
 		} );
 	}
 
-	doHuman(curr,next) {
-		this.highlightMove();
+	/**
+	 * Checks the winner combination.
+	 *
+	 * @param  {boolean|string} axis Found potential axis winning.
+	 * @param  {string} player The player that moves.
+	 * @return {(Array|Object)} Array of computer winning combination or an object with a human's winning data.
+	 * @private
+	 */
+	checkWinnerCombination_(axis,player) {
+		const comb = Array.from( this.fieldCells ).filter( o => o.ticked && o.tickType === this.tickType[player] ).map( o => o.position );
 
-		const h = handler.bind( this );
-
-		function handler(e) {
-			const target = e.target;
-			const td = target.closest( 'td' );
-
-			if (target.tagName === 'DIV' && td) {
-				const indx = td.id;
-				const ticked = this.tick( indx, this.tickType[curr] );
-				if (ticked) {
-					this.fieldElement.removeEventListener( 'click', h );
-
-					const winnerComb = this.checkWinnerCombination( false, curr );
-					if (winnerComb) {
-						this.actionsAfterWin( winnerComb.comb, winnerComb.axis )
-							.then(
-								result => {
-									this.restartParti()
-										.then(
-											result => {
-												this.makeMove();
-											}
-										);
-								}
-							);
-					} else {
-						if (this.players.player2 !== 'computer') {
-							if (this.draw()) {
-								return;
-							}
-						}
-						this.run = next;
-
-						if (this.randomCoinData.added && indx == this.randomCoinData.index) {
-							this.setCoins( 1, true )
-								.then(
-									result => {
-										this.makeMove();
-									}
-								);
-							this.randomCoinData.added = false;
-						} else {
-							this.makeMove();
-						}
-
-					}
-				}
-			}
-
-		}
-
-		if (this.run !== 'computer') {
-			this.fieldElement.addEventListener( 'click', h );
-		}
-	}
-
-	doComputer() {
-		this.highlightMove();
-
-		const result = this.analysis();
-		const n = result.cell - 1;
-
-		this.computerMoveAnimation(n)
-			.then(
-				res => {
-					const ticked = this.tick( n, this.tickType[this.run] );
-					this.state = this.count === this.fieldSize && this.state !== 'win' ? 'draw' : this.state;
-					if (this.state === 'win') {
-						if (ticked) {
-							this.actionsAfterWin( result.comb, result.axis )
-								.then(
-									result => {
-										this.restartParti()
-											.then(
-												result => {
-													this.makeMove();
-												}
-											);
-									}
-								)
-						}
-					} else if (this.state === 'draw') {
-						this.count = this.fieldSize;
-						this.draw();
-					} else {
-						if (ticked) {
-							setTimeout( () => {
-								this.run = 'human';
-								this.makeMove();
-							}, this.Constant_.TICK_TIMING );
-						}
-					}
-				}
-			);
-	}
-
-	tick(n,type,tick = true) {
-		if (this.fieldCells[n] && !this.fieldCells[n].ticked) {
-			this.fieldCells[n].ticked = true;
-			this.fieldCells[n].tickType = type;
-			this.displayTick( n, type );
-			this.sound.play( 'tick' );
-
-			this.count++;
-
-			return true;
-		}
-
-		return false;
-	}
-
-	checkWinnerCombination(axis,tickType) {
-		const comb = Array.from( this.fieldCells ).filter( o => o.ticked && o.tickType === this.tickType[tickType] ).map( o => o.position );
-
-		if (axis) {
-			const matrix = this.numberingAxes[axis];
-			return findCombRow.call( this, matrix );
-		} else {
-			const axiss = [];
-			const finded = [];
-			for (let prop in this.numberingAxes) {
-				const matrix = this.numberingAxes[prop];
-				finded.push( findCombRow.call( this, matrix ) );
-				axiss.push( prop );
-			}
-			const findedIndex = finded.findIndex( a => a.length );
-			if (~findedIndex) {
-				return {
-					comb: finded[findedIndex],
-					axis: this.makeRotateAxisClass( axiss[findedIndex], finded[findedIndex] )
-				}
-			}
-		}
-
+		/**
+		 * Finds the winning row of the axis.
+		 *
+		 * @param  {Array} matrix Row matrix.
+		 * @return {Array|boolean} Found row or not.
+		 * @private
+		 */
 		function findCombRow(matrix) {
 			for (let i = 0; i < matrix.length; i++) {
 				const row = matrix[i];
@@ -855,31 +701,77 @@ class Game {
 			return false;
 		}
 
+		if (axis) {
+			const matrix = this.numberingAxes[axis];
+			return findCombRow.call( this, matrix );
+		} else {
+			const axiss = [];
+			const finded = [];
+			for (let prop in this.numberingAxes) {
+				const matrix = this.numberingAxes[prop];
+				finded.push( findCombRow.call( this, matrix ) );
+				axiss.push( prop );
+			}
+			const findedIndex = finded.findIndex( a => a.length );
+			if (~findedIndex) {
+				return {
+					comb: finded[findedIndex],
+					axis: this.makeRotateAxisClass_( axiss[findedIndex], finded[findedIndex] )
+				}
+			}
+		}
+
 	}
 
-	getRandomCell() {
+	/**
+	 * Gets random cell where to make a move.
+	 *
+	 * @return {number} Cell position.
+	 * @private
+	 */
+	getRandomCell_() {
 		let ticked = false,
 			n;
 		do {
-			n = this.getRandomInt( 0, this.fieldSize );
-			ticked = this.isTickedCell( n );
+			n = getRandomInt( 0, this.fieldSize );
+			ticked = this.isTickedCell_( n );
 		} while (ticked === true);
 
 		return n + 1;
 	}
 
-	analysis() {
+	/**
+	 * Checks if cell is ticked.
+	 *
+	 * @param  {number}  n Cell number.
+	 * @return {boolean} Is a cell ticked.
+	 * @private
+	 */
+	isTickedCell_(n) {
+		if (this.fieldCells[n].ticked) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * An algorithm that analyzes the playing field where to make a move depending on the complexity.
+	 *
+	 * @return {Object} Cell where to make a move or cell, winning combination and axis.
+	 * @private
+	 */
+	analysis_() {
 		let result = {};
 		if (this.count < 2) {
-			result.cell = this.getRandomCell();
+			result.cell = this.getRandomCell_();
 		} else {
-			const o = this.filterCells();
-			const resultCompareComputer = this.makePotentialCells( o.emptyCells, o.computerCells, 'computer' );
-			const resultCompareHuman = this.makePotentialCells( o.emptyCells, o.humanCells, 'human' );
+			const o = this.filterCells_();
+			const resultCompareComputer = this.makePotentialCells_( o.emptyCells, o.computerCells, 'computer' );
+			const resultCompareHuman = this.makePotentialCells_( o.emptyCells, o.humanCells, 'human' );
 
 			if (resultCompareComputer.cell) {
 				if (this.difficulty === 'child' && this.count <= this.fieldSize - 2) {
-					const randCell = this.getRandomCell();
+					const randCell = this.getRandomCell_();
 					if (randCell === resultCompareComputer.cell) {
 						this.state = 'win';
 						result = resultCompareComputer;
@@ -896,16 +788,16 @@ class Game {
 						result.cell = resultCompareHuman.cell;
 						break;
 					case 'easy':
-						result.cell = resultCompareComputer.length ? this.chooseRandomCell( resultCompareComputer ) : resultCompareHuman.cell;
+						result.cell = resultCompareComputer.length ? this.chooseRandomCell_( resultCompareComputer ) : resultCompareHuman.cell;
 						break;
 					default:
-						result.cell = this.getRandomCell();
+						result.cell = this.getRandomCell_();
 				}
 			} else {
 				if (resultCompareComputer.length) {
-					result.cell = this.chooseRandomCell( resultCompareComputer );
+					result.cell = this.chooseRandomCell_( resultCompareComputer );
 				} else if (resultCompareHuman.length) {
-					result.cell = this.chooseRandomCell( resultCompareHuman );
+					result.cell = this.chooseRandomCell_( resultCompareHuman );
 				} else {
 					this.state = 'draw';
 					result.cell = o.emptyCells[0] ? o.emptyCells[0].position : -1;
@@ -917,7 +809,12 @@ class Game {
 
 	}
 
-	filterCells() {
+	/**
+	 * Filters cells on empty, computer, human.
+	 *
+	 * @return {Object} Object filtered cell in arrays.
+	 */
+	filterCells_() {
 		const field = Array.from( this.fieldCells );
 		const filteredCells = {};
 		filteredCells.emptyCells = field.filter( o => !o.ticked );
@@ -927,46 +824,62 @@ class Game {
 		return filteredCells;
 	}
 
-	makePotentialCells(emptyCells,playerCells,player) {
-
+	/**
+	 * Makes potential cells for move.
+	 *
+	 * @param  {Array} emptyCells  Object array with empty cells.
+	 * @param  {Array} playerCells Object array with player cells that moves.
+	 * @param  {string} player The player that moves.
+	 * @return {Array|Object} Array with elements in the array with potential cells or object with winning combination.
+	 * @private
+	 */
+	makePotentialCells_(emptyCells,playerCells,player) {
 		let potentialCells = [];
 		for (let i = 0; i < emptyCells.length; i++) {
-			const result = this.getPlayerPotentialCells( emptyCells[i].position, playerCells, player );
+			const result = this.getPlayerPotentialCells_( emptyCells[i].position, playerCells, player );
 			if (result) {
-				if (typeof( result ) === 'object' && result[0]) {
+				if (Array.isArray( result )) {
 					potentialCells.push( result );
 				} else {
 					return result;
 				}
 			}
 		}
-
 		return potentialCells;
 	}
 
-	getPlayerPotentialCells(emptyCell,compareCells,player) {
+	/**
+	 * Gets potencial cells for each player individually.
+	 *
+	 * @param  {number} emptyCell Empty cell.
+	 * @param  {Array} compareCells Compare cells.
+	 * @param  {[type]} player The player that moves.
+	 * @return {(Array|Object|boolean)} Array of potential cells for player or object with winning combination or false.
+	 * @private
+	 */
+	getPlayerPotentialCells_(emptyCell,compareCells,player) {
 		const playerPotencialCells = [];
 
 		for (let i = 0; i < compareCells.length; i++) {
 			const compareCell = compareCells[i].position;
 			const axisMultiply = compareCell * emptyCell;
-			const axis = this.getAxis( axisMultiply );
+			const axis = this.getAxis_( axisMultiply );
 			if (axis) {
 				const axisAddition = compareCell + emptyCell;
-				const potentialCell = this.getPotentialCell( axis, axisAddition );
+				const potentialCell = this.getPotentialCell_( axis, axisAddition );
 				if (potentialCell) {
 					const potentialCellObj = this.fieldCells[potentialCell - 1];
 					if (potentialCellObj.ticked) {
 						if (potentialCellObj.tickType === this.tickType[player]) {
-							const testTicked = this.doTestTick( emptyCell, player );
+							const testTicked = this.doTestTick_( emptyCell, player );
 							if (testTicked) {
-								const winnerComb = this.checkWinnerCombination( axis, player );
-								this.doTestTick( emptyCell, false, false );
+								const winnerComb = this.checkWinnerCombination_( axis, player );
+								this.doTestTick_( emptyCell, false, false );
 								if (winnerComb) {
 									return {
 										cell: emptyCell,
 										comb: winnerComb,
-										axis: this.makeRotateAxisClass( axis, winnerComb )
+										axis: this.makeRotateAxisClass_( axis, winnerComb )
 									}
 								}
 							}
@@ -981,7 +894,15 @@ class Game {
 		return playerPotencialCells.length ? playerPotencialCells : false;
 	}
 
-	getPotentialCell(axis,sumCells) {
+	/**
+	 * Gets potential cell for to makes a move.
+	 *
+	 * @param  {string} axis Curretn axis.
+	 * @param  {number} sumCells Sum of ticked cells on row.
+	 * @return {(number|boolean)} Potencial cell for move.
+	 * @private
+	 */
+	getPotentialCell_(axis,sumCells) {
 		const axisValues = this.additionAxes[axis];
 
 		for (let i = 0; i < axisValues.length; i++) {
@@ -997,14 +918,16 @@ class Game {
 
 	}
 
-	isTickedCell(n) {
-		if (this.fieldCells[n].ticked) {
-			return true;
-		}
-		return false;
-	}
-
-	doTestTick(cell,player,test=true) {
+	/**
+	 * Makes test tick.
+	 *
+	 * @param  {number}  cell Empty cell.
+	 * @param  {string}  player The player that moves.
+	 * @param  {boolean} test If test then fires for that cell.
+	 * @return {boolean} Check or uncheck empty cell.
+	 * @private
+	 */
+	doTestTick_(cell,player,test=true) {
 		const n = cell - 1;
 
 		if (test) {
@@ -1020,7 +943,13 @@ class Game {
 		return false;
 	}
 
-	getAxis(n) {
+	/**
+	 * Gets current axis.
+	 *
+	 * @param  {number} n Multiply cells.
+	 * @return {string|boolean} If the expression finds an axis returns the axis.
+	 */
+	getAxis_(n) {
 		for (let axis in this.multiplyingAxes) {
 			const val = this.multiplyingAxes[axis];
 			const find = val.some( v => v === n );
@@ -1035,96 +964,39 @@ class Game {
 
 	}
 
-	makeRotateAxisClass(str,arr) {
+	/**
+	 * Makes class for winning row.
+	 *
+	 * @param  {string} str Winning axis.
+	 * @param  {Array} arr Array winning combination.
+	 * @return {string} Axis class.
+	 * @private
+	 */
+	makeRotateAxisClass_(str,arr) {
 		str = str === 'z' && arr.some( v => v === 3 ) ? str + '-45' : str
 		return str;
 	}
 
-	chooseRandomCell(potentialCells) {
+	/**
+	 * Gets random cell from array of potential cells.
+	 *
+	 * @param  {Array} potentialCells The array of potential cells.
+	 * @return {number} Random cell.
+	 * @private
+	 */
+	chooseRandomCell_(potentialCells) {
 		potentialCells = potentialCells.reduce( (a,b) => a.concat( b ) );
 		const arr = new UniqueArray( potentialCells );
 		const potentialCellsUniq = arr.unique();
 
-		const n = this.getRandomInt( 0, potentialCellsUniq.length );
+		const n = getRandomInt( 0, potentialCellsUniq.length );
 		const cell = potentialCellsUniq[n];
 
 		return cell;
 	}
 
-	setStore() {
-		typeof( this.store[this.run] ) === 'number' ? this.store[this.run] += 1: this.store[this.run] = 1;
-		this.displayStore();
-	}
-
-	setPoints(winner,bonus) {
-		return new Promise( (resolve,reject) => {
-			if (this.mode === 'vs_computer') {
-				if (!bonus) {
-					this.expData.points = winner === 'human' ? this.expData.points + this.expData.winPointsGame : this.expData.points && this.expData.points - this.losePoints;
-					this.expData.partiPoints += winner === 'human' ? this.expData.winPointsGame : 0;
-				} else {
-					this.expData.points = winner === 'human' ? this.expData.points + this.bonusPoints : this.expData.points - this.bonusLosePoints;
-					this.expData.points = Number.parseInt( this.expData.points );
-						setTimeout( () => {
-							this.displayBonus( winner )
-								.then(
-									result => {
-										resolve();
-									}
-								);
-							this.expData.partiPoints = 0;
-						}, this.Constant_.MSG_ANIM_TIMING );
-				}
-				if (this.gameWinPoints > 0) {
-					this.levelUp();
-				} else {
-					this.levelDown();
-				}
-				this.setCoins();
-				this.displayExperience();
-			}
-			setTimeout( () => resolve(), this.Constant_.MSG_ANIM_TIMING );
-		} );
-	}
-
-	setNextLevelExp() {
-		this.expData.nextLevelExp = ((this.expData.nextLevelExp || this.expData.currentLevelExp) + this.levelGrow.value) + this.level * this.levelGrow.increase;
-		return this.expData.nextLevelExp;
-	}
-
-	setCurrentLevelExp() {
-		if (this.level === 1) {
-			this.expData.currentLevelExp = 0;
-		} else {
-			this.expData.currentLevelExp = ((this.expData.currentLevelExp + this.levelGrow.value) + (this.level - 1) * this.levelGrow.increase) - this.expData.currentLevelExp;
-		}
-	}
-
-	setCoins(force,randomCoin,sound) {
-		if (!force) {
-			if (this.expData.points >= this.coinsData.needExp) {
-				this.coinsData.coins += this.coinsData.getCoins;
-				this.coinsData.thresholdExp += this.coinsData.getExpInterval;
-				this.coinsData.needExp += this.coinsData.getExpInterval;
-				this.displayCoins();
-				this.unlockChips();
-			}
-		} else {
-			this.coinsData.coins += force;
-			return new Promise( (resolve,reject) => {
-				this.displayCoins(randomCoin, false, sound)
-					.then(
-						result => {
-							this.unlockChips();
-							resolve();
-						}
-					);
-			} );
-		}
-	}
-
 	unlockChips() {
-		const chips = Array.from( this.score ).filter( o => o.cost <= this.coinsData.coins && o.lock );
+		const chips = Array.from( this.store ).filter( o => o.cost <= this.coinsData.coins && o.lock );
 		const chipsIcons = [];
 
 		if (chips.length) {
@@ -1153,87 +1025,42 @@ class Game {
 
 	}
 
-	setVolition() {
-		if (this.mode === 'vs_computer') {
-			this.volitionData.value += 1;
-			if (!(this.volitionData.value % this.volitionData.interval)) {
-				const points = this.volitionData.points + this.volitionData.value * this.volitionData.increasePercent / 100;
-				const tmp = this.expData.winPointsGame;
-				this.expData.winPointsGame = points;
-				this.setPoints( 'human' )
-				this.expData.winPointsGame = tmp;
-				this.displayVolition( true, points )
-			} else {
-				this.displayVolition()
-			}
-		}
-	}
-
-	levelUp() {
-		if (this.expData.points >= this.expData.nextLevelExp) {
-			this.level++
-				this.expData.currentLevelExp = this.expData.nextLevelExp;
-			this.setNextLevelExp();
-			setTimeout( () => {
-				this.sound.play( 'level' );
-			}, this.Constant_.SOUND_INTERVAL + 200 );
-			this.displayLevel();
-			document.getElementById( this.CssIds_.EXP ).dataset.nextLvl = this.Constant_.TEXTS.NEXT_LVL_TXT.RU + this.expData.nextLevelExp;
-		}
-	}
-
-	levelDown() {
-		if (this.expData.points < this.expData.currentLevelExp) {
-			this.level--;
-			this.expData.nextLevelExp = this.expData.currentLevelExp;
-			this.setCurrentLevelExp();
-			this.displayLevel( false );
-			document.getElementById( this.CssIds_.EXP ).dataset.nextLvl = this.Constant_.TEXTS.NEXT_LVL_TXT.RU + this.expData.nextLevelExp;
-		}
-	}
-
-	appendRandomCoin() {
-		if (this.mode === 'vs_computer') {
-			const chance = this.getRandomInt( 0, 101 );
-			if (chance <= this.randomCoinData.chancePercent) {
-				const i = this.getRandomInt( 0, this.fieldSize );
-				const coin = document.querySelector( '.' + this.CssClasses_.COIN ).cloneNode();
-				coin.classList.add( this.CssClasses_.COIN + '--random' );
-				coin.classList.add( this.CssClasses_.HIDDEN );
-				const cell = document.querySelectorAll( '.' + this.CssClasses_.CELL )[i];
-				cell.firstElementChild.appendChild( coin );
-				this.randomCoinData.added = true;
-				this.randomCoinData.index = i;
-			}
-		}
-
-	}
-
-	getGameWinner() {
-		const stores = Object.values( this.store );
-		const sum = stores.reduce( (a,b) => a + b );
-		if (sum === this.parti) {
+	/**
+	 * Gets the winner of the game.
+	 *
+	 * @return {(string|boolean)} Winner name.
+	 * @private
+	 */
+	getGameWinner_() {
+		if (this.score.getSumScore() === this.parti) {
 			this.sound.play( 'win' );
-			const n = Math.max.apply( null, stores );
-			let i = stores.findIndex( v => v === n );
-			const winner = Object.keys( this.store )[i];
-			const prop = this.getPlayerId( winner );
-
-			return winner;
+			return this.score.getNameRichScore();
 		} else {
-			this.sound.play( 'point' );
+			return false;
 		}
 
-		return false;
 	}
 
-	getPartiLoser(winner) {
+	/**
+	 * Gets name of player loser game.
+	 *
+	 * @param  {string} winner Winner name.
+	 * @return {string} Loser name.
+	 * @private
+	 */
+	getGameLoser_(winner) {
 		const players = Object.values( this.players );
 		const i = players.findIndex( v => v !== winner );
 		return players[i];
 	}
 
-	getPlayerId(name) {
+	/**
+	 * Gets player identifier.
+	 *
+	 * @param  {string} name Player name.
+	 * @return {(string|boolean)} Player identifier.
+	 */
+	getPlayerId_(name) {
 		for (let prop in this.players) {
 			if (this.players[prop] === name) {
 				return prop;
@@ -1242,50 +1069,19 @@ class Game {
 		return false;
 	}
 
-	switchPartiPlayer() {
+	/**
+	 * Toggles the player who will move first in the next turn.
+	 *
+	 * @private
+	 */
+	switchPartiPlayer_() {
 		const playersNames = Object.values( this.players );
 		this.run = this.partiRun = playersNames.find( v => v !== this.partiRun );
 	}
 
-	animate(el,cls,timing = 0,del = true) {
-		if (el) {
-			el.classList.add( cls );
-			return new Promise( (resolve,reject) => {
-				setTimeout( () => {
-					del && el.classList.remove( cls );
-					resolve();
-				}, timing );
-			} );
-		}
-		return false;
-	}
-
-	throwConfetti(el,timing) {
-		if (el) {
-			const confetti = new Confetti( 'confetti', 150 );
-			el.appendChild( confetti );
-			return new Promise( (resolve,reject) => {
-				setTimeout( () => {
-					confetti.remove();
-					resolve();
-				}, timing );
-			} );
-		}
-		return false;
-
-	}
-
-	getRandomInt(min,max) {
-		return Math.floor( Math.random() * (max - min) ) + min;
-	}
-
-	getSoundInterval(name,add = 10) {
-		return (this.sound.timings[name].end - this.sound.timings[name].start) * 1e3 + add;
-	}
-
 	getClassPickedChip(side) {
 		if (this.run !== 'computer') {
-			const chip = Array.from( this.score ).find( o => o.pick && o.side === this.transSymbolTextSide( side ) );
+			const chip = Array.from( this.store ).find( o => o.pick && o.side === this.transSymbolTextSide( side ) );
 			if (chip) {
 				return ` ${this.CssClasses_.FIELD}__${chip.name}`;
 			}
@@ -1293,201 +1089,39 @@ class Game {
 		return '';
 	}
 
-	resetStores() {
-		this.store = {};
-		const stores = document.querySelectorAll( '.' + this.CssClasses_.STORE );
-
-		for (let i = 0; i < stores.length; i++) {
-			stores[i].textContent = 0;
-		}
-
-	}
-
-	displayStore() {
-		for (let prop in this.players) {
-			if (this.run === this.players[prop]) {
-				document.getElementById( prop ).querySelector( '.' + this.CssClasses_.STORE ).textContent = this.store[this.run];
-
-				break;
-			}
-		}
-	}
-
-	displayTick(n,type) {
-		let tick = document.createElement( 'div' );
-		tick.className = `${this.CssClasses_.TICK} ${this.CssClasses_.TICK}--${this.tickType[this.run]}${this.getClassPickedChip( type )}`;
-		this.fieldElement.querySelectorAll( 'td' )[n].firstElementChild.appendChild( tick );
-	}
-
-	displayWinner(arr,axis) {
-		for (let i = 0; i < arr.length; i++) {
-			this.fieldElement.querySelectorAll( 'td' )[arr[i] - 1].classList.add( this.CssClasses_.WIN + '-' + axis );
-		}
-		// console.log( 'Winner is: ' + this.run );
-	}
-
-	displayMessage(str) {
-		if (str) {
-			const elem = document.getElementById( this.CssIds_.MSG );
-			elem.classList.add( this.CssClasses_.MSG );
-			let msg = 'Выиграл';
-
-			switch (str) {
-				case 'human':
-					msg += this.playerFirstName === 'Вы' ? 'и ' + this.playerFirstName : ' ' + this.playerFirstName;
-					break;
-				case 'draw':
-					msg = 'Ничья';
-					break;
-				default:
-					msg += ' ' + this.names[str];
-			}
-
-			elem.textContent = msg + '!';
-
-			setTimeout( () => {
-				elem.classList.remove( this.CssClasses_.MSG );
-			}, this.Constant_.MSG_ANIM_TIMING );
-
-		}
-	}
-
-	displayExperience() {
-		const needLvlExp = this.expData.nextLevelExp - this.expData.currentLevelExp;
-		const elem = document.getElementById( this.CssIds_.EXP );
-		elem.firstElementChild.style.width = Number.parseInt( this.gameWinPoints / needLvlExp * 100 ) + '%';
-		document.getElementById( this.CssIds_.POINTS ).textContent = this.expData.points;
-	}
-
-	displayBonus(winner,volition) {
-		return new Promise( (resolve,reject) => {
-			const elem = document.getElementById( this.CssIds_.BONUS );
-			if (!volition) {
-				if (winner === 'human') {
-					if (this.bonusPoints > 0) {
-						elem.innerHTML = `<span class="tttoe__bonus-win">+${Number.parseInt( this.bonusPoints )}</span><span class="tttoe__bonus-msg">Бонус</span>`;
-					} else {
-						return resolve();
-					}
-				} else {
-					if (this.bonusLosePoints > 0) {
-						elem.innerHTML = `<span class="tttoe__bonus-lose">-${Number.parseInt( this.bonusLosePoints )}</span><span class="tttoe__bonus-msg">Луз</span>`;
-					} else {
-						return resolve();
-					}
-				}
-			} else {
-				elem.innerHTML = `<span class="tttoe__bonus-volition">+${volition}</span><span class="tttoe__bonus-msg">Воля</span>`;
-			}
-			elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
-			this.sound.play( 'swing' );
-			this.animate( elem.parentNode, this.CssClasses_.ANIM.FADEIN_LEFT, 0, false )
-				.then(
-					result => {
-						setTimeout( () => {
-							this.sound.play( 'swing' );
-							this.animate( elem.parentNode, this.CssClasses_.ANIM.FADEIN_RIGHT, this.Constant_.ANIM_TIMING )
-								.then(
-									result => {
-										elem.parentNode.classList.toggle( this.CssClasses_.HIDDEN );
-										elem.parentNode.classList.toggle( this.CssClasses_.ANIM.FADEIN_LEFT );
-									}
-								);
-							resolve();
-						}, this.Constant_.BONUS_TIMING );
-					}
-				);
-		} );
-	}
-
-	displayCoins(randomCoin,animPoints = true,sound = true) {
-		document.getElementById( this.CssIds_.COINS ).textContent = this.coinsData.coins;
-		const coin = document.querySelectorAll( '.' + this.CssClasses_.COIN )[randomCoin ? 1 : 0];
-		coin.classList.remove( this.CssClasses_.HIDDEN );
-		if (animPoints) {
-			this.animate( document.getElementById( this.CssIds_.POINTS ), this.CssClasses_.ANIM.FLASH, this.Constant_.ANIM_TIMING );
-		}
-		if (sound) {
-			this.sound.play( 'coin' );
-		}
-		return new Promise( (resolve,reject) => {
-			this.animate( coin, this.CssClasses_.ANIM.FLIP, this.Constant_.ANIM_TIMING )
-				.then(
-					result => {
-						randomCoin && coin.remove();
-						resolve();
-					}
-				);
-		} );
-	}
-
-	displayLevel(anim = true) {
-		const elem = document.getElementById( this.CssIds_.LVL ).firstElementChild;
-		elem.textContent = this.level;
-		if (anim) {
-			setTimeout( () => {
-				this.animate( elem, this.CssClasses_.ANIM.BOUNCE_IN, this.Constant_.ANIM_TIMING );
-			}, this.Constant_.SOUND_INTERVAL + 200 );
-		}
-	}
-
-	displayVolition(anim,points) {
-		const elem = document.getElementById( this.CssIds_.VOLITION );
-		elem.textContent = this.volitionData.value;
-		if (anim) {
-			this.sound.play( 'will' )
-				.then(
-					result => {
-						this.displayBonus( null, points );
-					}
-				);
-			elem.nextElementSibling.style.fill = this.Constant_.VOLITION_COLOR;
-			this.animate( elem.nextElementSibling, this.CssClasses_.ANIM.RUBBER_BAND, this.Constant_.ANIM_TIMING )
-				.then(
-					result => {
-						elem.nextElementSibling.style.fill = '#ffffff';
-					}
-				);
-		}
-	}
-
 	displayUnlockChip(elem) {
 		return new Promise( (resolve,reject) => {
-			const wrp = document.querySelector( '.' + this.CssClasses_.UNLOCK_CHIPS );
-			const confetti = wrp.querySelector( '.' + this.CssClasses_.CONFETTI_STATIC );
+			const wrapper = document.querySelector( '.' + this.CssClasses_.UNLOCK_CHIPS );
+			const confetti = wrapper.querySelector( '.' + this.CssClasses_.CONFETTI_STATIC );
 			const btnAct = document.querySelector( '.' + this.CssClasses_.BUTTON_ACT );
 			const clone = elem.cloneNode();
-			clone.classList.add( this.CssClasses_.ANIM.ANIMATED );
+			clone.classList.add( this.CssClasses_.ANIMATED );
 			const span = document.createElement( 'span' );
-			span.textContent = this.Constant_.TEXTS.NEW_CHIP.RU;
-			span.className = this.CssClasses_.ANIM.ANIMATED;
+			span.textContent = this.Texts_.NEW_CHIP.RU;
+			span.className = this.CssClasses_.ANIMATED;
 			clone.appendChild( span );
-			wrp.appendChild( clone );
+			wrapper.appendChild( clone );
 
 			this.sound.play( 'swing' );
 			btnAct.disabled = true;
-			wrp.classList.toggle( this.CssClasses_.HIDDEN );
-			this.animate( confetti, this.CssClasses_.ANIM.BOUNCE_IN_DOWN, this.Constant_.ANIM_TIMING, false );
-			this.animate( clone, this.CssClasses_.ANIM.BOUNCE_IN_UP, this.Constant_.ANIM_TIMING, false )
+
+			wrapper.classList.toggle( this.CssClasses_.HIDDEN );
+			this.anim.animate( confetti, 'bouncing_entrances_1', false );
+			this.anim.animate( clone, 'bouncing_entrances_4', false )
 				.then(
 					result => {
-						this.animate( span, this.CssClasses_.ANIM.TADA, 0, false );
+						this.anim.animate( span, 'attention_seekers_9', false, 0 );
 						this.sound.play( 'tada' )
 							.then(
 								result => {
 									this.sound.play( 'swing' );
-									this.animate( confetti, this.CssClasses_.ANIM.BOUNCE_OUT_DOWN, this.Constant_.ANIM_TIMING )
-										.then(
-											result => {
-												confetti.classList.remove( this.CssClasses_.ANIM.BOUNCE_IN_DOWN );
-											}
-										);
-									this.animate( clone, this.CssClasses_.ANIM.BOUNCE_OUT_UP, this.Constant_.ANIM_TIMING )
+									this.anim.animate( confetti, 'boucing_exits_1' );
+									this.anim.animate( clone, 'boucing_exits_4' )
 										.then(
 											result => {
 												clone.remove();
 												btnAct.disabled = false;
-												wrp.classList.toggle( this.CssClasses_.HIDDEN );
+												wrapper.classList.toggle( this.CssClasses_.HIDDEN );
 												resolve();
 											}
 										);
@@ -1498,7 +1132,13 @@ class Game {
 		} );
 	}
 
-	restartParti() {
+	/**
+	 * Restarts the party.
+	 *
+	 * @return {Promise} Promise.
+	 * @private
+	 */
+	restartParti_() {
 		return new Promise( (resolve,reject) => {
 			const fieldCells = Array.from( this.fieldCells );
 
@@ -1516,12 +1156,7 @@ class Game {
 				this.state = '';
 			}
 
-			const randomCoin = document.querySelector( '.' + this.CssClasses_.FIELD ).querySelector( '.' + this.CssClasses_.COIN );
-			randomCoin && randomCoin.remove();
-			this.randomCoinData.added = false;
-			this.randomCoinData.index = -1;
-
-			this.appendRandomCoin();
+			this.coins.appendRandomCoin();
 
 			resolve();
 		} );
@@ -1529,13 +1164,13 @@ class Game {
 
 	toggleScoreChipsDisplay(target,n) {
 		const flag = target.classList.toggle( this.CssClasses_.CHIP_PICK );
-		this.score[n].pick = flag;
+		this.store[n].pick = flag;
 		let chips = Array.from( document.querySelectorAll( '.' + this.CssClasses_.CHIP ) );
-		const chipMustDisable = chips.filter( (v,i) => this.score[i].pick && i != n )[0];
+		const chipMustDisable = chips.filter( (v,i) => this.store[i].pick && i != n )[0];
 
 		if (chipMustDisable) {
 			chipMustDisable.classList.remove( this.CssClasses_.CHIP_PICK );
-			const chip = this.score[chipMustDisable.dataset.index];
+			const chip = this.store[chipMustDisable.dataset.index];
 			chip.pick = false;
 			return chip;
 		}
@@ -1559,19 +1194,25 @@ class Game {
 		}
 	}
 
-	draw() {
+	/**
+	 * Checks the game for a draw.
+	 *
+	 * @return {boolean} The state draws.
+	 * @private
+	 */
+	draw_() {
 		if (this.count === this.fieldSize) {
-			this.displayMessage( 'draw' );
-			this.switchPartiPlayer();
+			this.experience.displayPartiResultMessage( 'draw' );
+			this.switchPartiPlayer_();
 			this.sound.play( 'draw' )
 				.then(
 					result => {
-						this.setVolition()
+						this.experience.setVolition()
 							setTimeout( () => {
-								this.restartParti()
+								this.restartParti_()
 									.then(
 										result => {
-											this.makeMove();
+											this.makeMove_();
 										}
 									);
 							}, this.Constant_.RESTART_PARTI );
@@ -1582,7 +1223,14 @@ class Game {
 		return false;
 	}
 
-	computerMoveAnimation(id) {
+	/**
+	 * Makes the animation of the computer.
+	 *
+	 * @param  {number} id Cell identifier.
+	 * @return {Promise} Promise.
+	 * @private
+	 */
+	computerMoveAnimation_(id) {
 		return new Promise( (resolve,reject) => {
 			if (id >= 0) {
 				const cell = document.getElementById( id );
@@ -1595,62 +1243,56 @@ class Game {
 				cursor.classList.remove( this.CssClasses_.HIDDEN );
 				cursor.style.top = positionTop;
 				cursor.style.right = positionLeft;
-				setTimeout( () => {
+				setTimeout( _ => {
 					cursor.classList.add( this.CssClasses_.HIDDEN );
 					cursor.style.top = '';
 					cursor.style.right = '';
 					resolve();
-				}, 1000 );
+				}, this.Constant_.MOVE_ANIMATION );
 			} else {
 				resolve();
 			}
 		} );
 	}
 
-	registerCallPopups() {
+	/**
+	 * Registers calls popups.
+	 *
+	 * @private
+	 */
+	registerCallPopups_() {
 		document.addEventListener( 'click', (e) => {
-			const btn = this.findNode( e );
+			const btn = this.findNode_( e );
 			if (btn) {
 				const popupClassElem = btn.dataset && btn.dataset.popup;
 				if (popupClassElem && !btn.disabled) {
 					const popup = document.querySelector( '.' + btn.dataset.popup );
 					const p = this.popupToggle( popup );
 					if (typeof(p) === 'boolean' && p) {
-						//  Call menuActions, chipActions
-						this[popupClassElem.replace( /^.+__/, '' ) + 'Actions']( popup );
+						//  Call menuActions, chipActions, statisticsActions, aboutActions
+						this[popupClassElem.replace( /^.+__/, '' ) + 'Actions_']( popup );
 					}
 				}
 			}
 		} );
 	}
 
-	popupToggle(elem) {
-		const flag = elem.dataset.flag;
-		if (this[flag]) {
-			elem.removeEventListener( 'click', this.bindedHandler );
-			return new Promise( (resolve,reject) => {
-				this[flag] = !this[flag];
-				this.animate( elem, this.CssClasses_.ANIM.FADE_OUT, this.Constant_.ANIM_TIMING )
-					.then(
-						result => {
-							elem.classList.remove( this.CssClasses_.ANIM.FADEIN_DEF );
-							elem.classList.toggle( this.CssClasses_.HIDDEN );
-							resolve();
-						}
-					);
-			} );
-		} else {
-			elem.classList.toggle( this.CssClasses_.HIDDEN );
-			this.animate( elem, this.CssClasses_.ANIM.FADEIN_DEF, 0, false );
-			this[flag] = !this[flag];
-			return true;
-		}
-	}
-
-	actionsHandler(o,elem) {
+	/**
+	 * Actions handler.
+	 *
+	 * @param  {Object} o Unique logic for each act method.
+	 * @param  {Element} elem Element on which events are triggered.
+	 * @private
+	 */
+	actionsHandler_(o,elem) {
 		this.bindedHandler = handler.bind( this );
 		this.bindedElem = elem;
 
+		/**
+		 * Handler.
+		 *
+		 * @param  {Event} e The event that fired.
+		 */
 		function handler(e) {
 			const target = e.target.closest( 'button' ) || e.target.closest( 'a' );
 			if (target) {
@@ -1665,8 +1307,14 @@ class Game {
 
 	}
 
-	menuActions(elem) {
-		this.actionsHandler( {
+	/**
+	 * Menus actions.
+	 *
+	 * @param  {Element} elem Popup element for toggle.
+	 * @private
+	 */
+	menuActions_(elem) {
+		this.actionsHandler_( {
 			act: (target,elem) => {
 				this.popupToggle( elem )
 					.then(
@@ -1680,12 +1328,18 @@ class Game {
 		}, elem );
 	}
 
-	chipsActions(elem) {
-		this.actionsHandler( {
+	/**
+	 * Chips actions.
+	 *
+	 * @param  {Element} elem Popup element for actions.
+	 * @private
+	 */
+	chipsActions_(elem) {
+		this.actionsHandler_( {
 			act: (target,elem) => {
 				if (target.classList.contains( this.CssClasses_.CHIP ) && !target.disabled) {
 					const i = target.dataset.index;
-					const chip = this.score[i];
+					const chip = this.store[i];
 					if (this.buyChip( chip, i )) {
 						const disabledChip = this.toggleScoreChipsDisplay( target, i );
 						if (disabledChip) {
@@ -1693,9 +1347,7 @@ class Game {
 						}
 						this.toggleFieldChipsDisplay( chip );
 					} else {
-						setTimeout( () => {
-							this.sound.play( 'coin1' );
-						}, this.getSoundInterval( 'click' ) );
+						this.sound.play( 'coin1' );
 					}
 				}
 
@@ -1703,17 +1355,29 @@ class Game {
 		}, elem );
 	}
 
-	statisticsActions(elem) {
+	/**
+	 * Statistics actions.
+	 *
+	 * @param  {Element} elem Popup element for actions.
+	 * @private
+	 */
+	statisticsActions_(elem) {
 		this.pagination.toggleActive();
-		this.actionsHandler( {
+		this.actionsHandler_( {
 			act: (target,elem) => {
 				console.log('act');
 			}
 		}, elem );
 	}
 
-	aboutActions(elem) {
-		this.actionsHandler( {
+	/**
+	 * About actions.
+	 *
+	 * @param  {Element} elem Popup element for actions.
+	 * @private]
+	 */
+	aboutActions_(elem) {
+		this.actionsHandler_( {
 			act: (target,elem) => {
 			}
 		}, elem );
@@ -1723,9 +1387,7 @@ class Game {
 		if (!o.paid && (this.coinsData.coins - o.cost >= 0)) {
 			this.setCoins( -o.cost, false, false );
 			document.querySelector( `button[data-index="${n}"]` ).querySelector( '.' + this.CssClasses_.CHIPS_FOOT ).innerHTML = `<div class="${this.CssClasses_.CHIP_PAID}"></div>`;
-			setTimeout( () => {
-				this.sound.play( 'coins' );
-			}, this.getSoundInterval( 'click' ) );
+			this.sound.play( 'coins' );
 			return o.paid = true;
 		}
 		return o.paid;
@@ -1733,17 +1395,13 @@ class Game {
 
 	restartGame() {
 		const container = document.getElementById( this.CssIds_.CONTAINER );
-		this.animate( container, this.CssClasses_.ANIM.FADE_OUT, this.Constant_.ANIM_TIMING )
+		this.anim.animate( container, 'fading_exits_0' )
 			.then(
 				result => {
-					container.classList.remove( this.CssClasses_.ANIM.FADEIN_DEF );
-					container.classList.add( this.CssClasses_.HIDDEN );
 					container.remove();
 
 					const screen = new Screen();
 					screen.init();
-					screen.screen.classList.remove( this.CssClasses_.ANIM.FADE_OUT );
-					screen.screen.classList.remove( this.CssClasses_.HIDDEN );
 
 					const fullscreen = new ToggleScreen();
 					fullscreen.close();
@@ -1751,13 +1409,26 @@ class Game {
 			);
 	}
 
-	findNode(e,selector = this.CssClasses_.BUTTON_ACT) {
+	/**
+	 * Finds ancestor.
+	 *
+	 * @param  {Event} e The event that fired.
+	 * @param  {String} selector Selector for query.
+	 * @return {Element} Found element.
+	 * @private
+	 */
+	findNode_(e,selector = this.CssClasses_.BUTTON_ACT) {
 		return e.target.closest( '.' + selector );
 	}
 
-	soundOfButtons() {
+	/**
+	 * Registers sounds on buttons.
+	 *
+	 * @private
+	 */
+	soundOfButtons_() {
 		document.addEventListener( 'click', (e) => {
-			const btn = this.findNode( e );
+			const btn = this.findNode_( e );
 			if (btn) {
 				if (btn.disabled && [...btn.children].some( v => v.classList.contains( this.CssClasses_.LOCK ) )) {
 					this.sound.play( 'lock' );
@@ -1768,7 +1439,7 @@ class Game {
 		} );
 
 		document.addEventListener( 'mouseover', (e) => {
-			const btn = this.findNode( e );
+			const btn = this.findNode_( e );
 			if (btn) {
 				if (!btn.dataset.hover) {
 					this.sound.play( 'hover' );
@@ -1781,10 +1452,15 @@ class Game {
 		} );
 	}
 
-	triggers() {
+	/**
+	 * Registers triggers on hotkeys.
+	 *
+	 * @private
+	 */
+	triggers_() {
 		document.addEventListener( 'keyup', (e) => {
 			const hotkeys = Object.keys( this.CssIds_.HOTKEYS );
-			const findKey = hotkeys.find( (v) => v === e.key.toLowerCase() );
+			const findKey = hotkeys.find( (v) => v === e.key && e.key.toLowerCase() );
 			if (findKey) {
 				if (this.bindedElem) {
 					this.bindedElem.removeEventListener( 'click', this.bindedHandler );
@@ -1794,16 +1470,260 @@ class Game {
 		} );
 	}
 
+	// Public methods.
+
+	/**
+	 * Makes a move by human.
+	 *
+	 * @param  {String} curr Human move.
+	 * @param  {String} next Computer or human1 move.
+	 * @param {Number} id Target cell identifier.
+	 * @public
+	 */
+	doHuman(curr,next,id) {
+
+		const h = handler.bind( this );
+
+		/**
+		 * Handler.
+		 *
+		 * @param  {Event} e The event that fired.
+		 * @private
+		 */
+		function handler(e) {
+			const target = e.target;
+			const td = target.closest( 'td' );
+			if (target.tagName === 'DIV' && td) {
+				const indx = td.id;
+				const ticked = this.tick( indx, this.tickType[curr] );
+				if (ticked) {
+					this.fieldElement.removeEventListener( 'click', h );
+
+					const winnerComb = this.checkWinnerCombination_( false, curr );
+					if (winnerComb) {
+						this.actionsAfterPartiOver_( winnerComb.comb, winnerComb.axis )
+							.then(
+								result => {
+									this.restartParti_()
+										.then(
+											result => {
+												this.makeMove_();
+											}
+										);
+								}
+							);
+					} else {
+						if (this.players.player2 !== 'computer') {
+							if (this.draw_()) {
+								return;
+							}
+						}
+						this.run = next;
+
+						if (this.coins.compareRandomCoinIndex( indx )) {
+							this.coins.setCoins( this.experience.expData.points, 1, true )
+								.then(
+									result => {
+										this.makeMove_();
+									}
+								);
+						} else {
+							this.makeMove_();
+						}
+
+					}
+				}
+			}
+
+		}
+
+		if (this.run !== 'computer') {
+			if (Number.isInteger( id ) && id >= 0 && id <= this.fieldSize - 1) {
+				h( { target: document.getElementById( id ).firstElementChild } );
+			} else {
+				this.fieldElement.addEventListener( 'click', h );
+			}
+		}
+	}
+
+
+	/**
+	 * Makes a move by computer.
+	 *
+	 * @public
+	 */
+	doComputer() {
+
+		const result = this.analysis_();
+		const n = result.cell - 1;
+
+		this.computerMoveAnimation_(n)
+			.then(
+				res => {
+					const ticked = this.tick( n, this.tickType[this.players.player2] );
+					this.state = this.count === this.fieldSize && this.state !== 'win' ? 'draw' : this.state;
+					if (this.state === 'win') {
+						if (ticked) {
+							this.actionsAfterPartiOver_( result.comb, result.axis )
+								.then(
+									result => {
+										this.restartParti_()
+											.then(
+												result => {
+													this.makeMove_();
+												}
+											);
+									}
+								)
+						}
+					} else if (this.state === 'draw') {
+						this.count = this.fieldSize;
+						this.draw_();
+					} else {
+						if (ticked) {
+							setTimeout( () => {
+								this.run = 'human';
+								this.makeMove_();
+							}, this.Constant_.TICK_TIMING );
+						}
+					}
+				}
+			);
+	}
+
+	/**
+	 * Creates a tick.
+	 *
+	 * @param  {Number}  n Tick number.
+	 * @param  {String}  type Tick view.
+	 * @return {Boolean} If ticked.
+	 * @public
+	 */
+	tick(n,type) {
+		if (this.fieldCells[n] && !this.fieldCells[n].ticked) {
+			this.fieldCells[n].ticked = true;
+			this.fieldCells[n].tickType = type;
+			this.displayTick( n, type );
+			this.sound.play( 'tick' );
+
+			this.count++;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Display tick.
+	 *
+	 * @param  {Number} n Tick number.
+	 * @param  {String} type Tick view.
+	 * @public
+	 */
+	displayTick(n,type) {
+		let tick = document.createElement( 'div' );
+		tick.className = `${this.CssClasses_.TICK} ${this.CssClasses_.TICK}--${type}${this.getClassPickedChip( type )}`;
+		this.fieldElement.querySelectorAll( 'td' )[n].firstElementChild.appendChild( tick );
+	}
+
+	/**
+	 * Displays winner row.
+	 *
+	 * @param  {Array} arr Row combination of a parti winner.
+	 * @param  {string} axis The axis of a parti winner.
+	 * @public
+	 */
+	displayWinnerThrough(arr,axis) {
+		for (let i = 0; i < arr.length; i++) {
+			this.fieldElement.querySelectorAll( 'td' )[arr[i] - 1].classList.add( this.CssClasses_.WIN + '-' + axis );
+		}
+	}
+
+	/**
+	 * Toggles popup visibility.
+	 *
+	 * @param  {Element} elem Element to toggle visibility.
+	 * @return {Boolean} When popup is displayed.
+	 * @return {Promise} Promise when popup is closed.
+	 * @public
+	 */
+	popupToggle(elem) {
+		const flag = elem.dataset.flag;
+		if (this[flag]) {
+			elem.removeEventListener( 'click', this.bindedHandler );
+			return new Promise( (resolve,reject) => {
+				this[flag] = !this[flag];
+				this.anim.animate( elem, 'fading_exits_0', undefined, undefined, true )
+					.then(
+						result => resolve()
+					);
+			} );
+		} else {
+			this.anim.animate( elem, 'fading_entrances_0', false, 0 );
+			this[flag] = !this[flag];
+			return true;
+		}
+	}
+
+	/**
+	 * Throws confetti.
+	 *
+	 * @param  {Element} el Element container for confetti.
+	 * @param  {number} timing Timing when confetti will end.
+	 * @return {Promise} Promise.
+	 * @public
+	 */
+	throwConfetti(el,timing) {
+		if (el) {
+			const confetti = new Confetti( 'confetti', 150 );
+			el.appendChild( confetti );
+			return new Promise( (resolve,reject) => {
+				setTimeout( _ => {
+					confetti.remove();
+					resolve();
+				}, timing );
+			} );
+		}
+		return false;
+	}
+
+	/**
+	 * Initialize.
+	 */
 	init() {
-		this.countAxesValues();
-		this.makeFieldCells();
+		this.countAxesValues_();
+		this.makeFieldCells_();
 		return new Promise( (resolve,reject) => {
-			this.makeView()
+			this.pagination = new Pagination( this.statistics.data.length, this.statistics.limit );
+			this.score = new Score( {
+				players: this.players,
+				names: this.names,
+				playerFirstName: this.playerFirstName,
+				playerSecondName: this.playerSecondName
+			} );
+			this.coins = new Coins( {
+				fieldSize: this.fieldSize,
+				mode: this.mode,
+				sound: this.sound,
+				anim: this.anim
+			} );
+			this.experience = new Experience( {
+				mode: this.mode,
+				coins: this.coins,
+				sound: this.sound,
+				anim: this.anim,
+				names: this.names,
+				playerFirstName: this.playerFirstName,
+				playerSecondName: this.playerSecondName
+			} );
+			this.makeView_()
 				.then(
 					result => {
-						this.soundOfButtons();
-						this.triggers();
-						this.registerCallPopups();
+						this.coins.appendRandomCoin();
+						this.soundOfButtons_();
+						this.triggers_();
+						this.registerCallPopups_();
 						resolve();
 					}
 				);
@@ -1812,44 +1732,17 @@ class Game {
 
 }
 
-class UniqueArray extends Array {
-	unique() {
-		this[0].sort( (a,b) => a - b );
-		let unique = [];
-		if (this[0].length > 1) {
-			this[0].reduce( (a,b,i,arr) => {
-				if (a - b) {
-					unique.push( a );
-					if (arr[arr.length - 1] === arr[i]) {
-						unique.push( b );
-					}
-				} else {
-					if (arr.length === 2) {
-						unique.push( b );
-					}
-				}
-				return b;
-			} );
-		} else {
-			if (!this[0].length) {
-				throw new Error( 'The array does not have a suitable length!' );
-			}
-			unique = this[0];
-		}
-		return unique;
-	}
-}
-
-
 if (test) {
 	const sound = new Sound();
+	const anim = new Animation();
 
 	const game = new Game( {
-		sound: sound
+		sound: sound,
+		anim: anim
 	} );
 
 	game.init()
 		.then(
-			result => game.makeMove()
+			result => game.makeMove_()
 		);
 }

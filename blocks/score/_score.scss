@@ -1,0 +1,44 @@
+/**
+ *
+ * score
+ *
+ */
+
+.score {
+	display: flex;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 0 20%;
+	pointer-events: none;
+	justify-content: space-between;
+
+	&__player {
+		position: relative;
+		width: $ava-size;
+		text-align: center;
+	}
+	&__avatar {
+		box-sizing: border-box;
+		display: inline-block;
+		width: $ava-size;
+		height: $ava-size;
+		border-radius: 10px;
+		border: 5px solid $ava-border-color;
+	}
+	&__avatar--highlight {
+		box-shadow: 0 0 5px $ava-hl-shadow-color;
+		border-color: $ava-hl-border-color;
+	}
+	&__name {
+		line-height: 1.1;
+		margin: 5px 0;
+		color: white;
+	}
+	&__score {
+		font-size: 2rem;
+		line-height: 1.1;
+		display: inline-block;
+		color: $border-color;
+	}
+
+}

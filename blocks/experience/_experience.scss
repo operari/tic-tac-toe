@@ -1,0 +1,130 @@
+/**
+ *
+ * experience
+ *
+ */
+
+.experience {
+	&__volition {
+		position: relative;
+		display: flex;
+		align-items: center;
+		margin-right: 30px;
+		&:hover {
+			&::after {
+				font-size: $vol-font-size;
+				position: absolute;
+				top: -20px;
+				right: 3px;
+				text-transform: uppercase;
+				content: attr(data-title);
+			}
+		}
+	}
+	&__volition-count {
+		font-size: $vol-count-font-size;
+		margin-right: 10px;
+		color: $vol-count-color;
+	}
+	&__volition-ico {
+		visibility: visible;
+		transition: all .5s ease-in-out;
+	}
+	&__exp-bar {
+		display: flex;
+		align-items: center;
+	}
+	&__exp-points {
+		font-size: $exp-points-font-size;
+		visibility: visible;
+		margin-right: 10px;
+		color: $exp-points-color;
+	}
+	&__experience {
+		position: relative;
+		overflow: hidden;
+		width: $exp-width;
+		height: $exp-height;
+		margin-right: 10px;
+		border: $exp-border-size solid white;
+		border-radius: 15px;
+		&:hover {
+			overflow: visible;
+			&::after {
+				font-size: $exp-help-font-size;
+				line-height: 30px;
+				margin-left: 10px;
+				content: attr(data-next-lvl);
+				white-space: nowrap;
+			}
+			> span {
+				display: none;
+			}
+		}
+		> span {
+			&:last-child {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 0;
+				height: 100%;
+				transition: all .5s ease-in-out;
+				background-color: $exp-color;
+			}
+		}
+	}
+	&__level {
+		font-size: $exp-level-font-size;
+		color: $exp-level-color;
+		> span {
+			display: inline-block;
+			visibility: visible;
+		}
+	}
+	&__bonus {
+		position: fixed;
+		z-index: 1;
+		top: 0;
+		left: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		> div > div {
+			font-size: $exp-bonus-font-size;
+			line-height: 1;
+			display: flex;
+			flex-flow: column nowrap;
+			align-items: flex-end;
+			text-shadow: $exp-bonus-text-shadow;
+			&.is-hidden {
+				display: none;
+			}
+		}
+	}
+	&__bonus-win {
+		color: $bonus-color;
+		+ span {
+			color: $bonus-color;
+		}
+	}
+	&__bonus-lose {
+		color: $bonus-lose-color;
+		+ span {
+			color: $bonus-lose-color;
+		}
+	}
+	&__bonus-volition {
+		color: $bonus-volition-color;
+	}
+	&__bonus-msg {
+		font-size: $bonus-msg-font-size;
+		font-style: italic;
+		width: 100%;
+		margin-top: -8px;
+		margin-right: 8px;
+		text-align: right;
+		text-shadow: $exp-bonus-text-shadow;
+	}
+}

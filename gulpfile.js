@@ -9,26 +9,33 @@ var argv = require('yargs').argv;
 var $ = gulpLoadPlugins();
 
 var BLOCKS = {
-	"common": "blocks"
+	"lib": "blocks",
+	"common": "common.blocks"
 };
 
 var SOURCES = [
-  `${BLOCKS.common}/sound/sound.js`,
-  `${BLOCKS.common}/dice/dice.js`,
-  `${BLOCKS.common}/confetti/confetti.js`,
-  `${BLOCKS.common}/pagination/pagination.js`,
-  `${BLOCKS.common}/toggleScreen/toggleScreen.js`,
-  `${BLOCKS.common}/signIn/sign_in.js`,
-  `${BLOCKS.common}/screen/screen.js`,
-  `${BLOCKS.common}/game/game.js`
+  `${BLOCKS.lib}/helpers/helpers.js`,
+  `${BLOCKS.lib}/animation/animation.js`,
+  `${BLOCKS.lib}/sound/sound.js`,
+  `${BLOCKS.lib}/dice/dice.js`,
+  `${BLOCKS.lib}/confetti/confetti.js`,
+  `${BLOCKS.lib}/pagination/pagination.js`,
+  `${BLOCKS.lib}/toggleScreen/toggleScreen.js`,
+  `${BLOCKS.lib}/signIn/sign_in.js`,
+  // `${BLOCKS.lib}/screen/screen.js`,
+  `${BLOCKS.lib}/score/score.js`,
+  `${BLOCKS.lib}/coins/coins.js`,
+  `${BLOCKS.lib}/experience/experience.js`,
+  `${BLOCKS.lib}/game/game.js`
 ];
 
 var WATCH = {
 	sass: [
+		`${BLOCKS.lib}/**/*.scss`,
 		`${BLOCKS.common}/**/*.scss`
 	],
 	js: [
-		`${BLOCKS.common}/**/*.js`
+		`${BLOCKS.lib}/**/*.js`
 	],
 	html: [
 		'*.html'
@@ -148,7 +155,7 @@ gulp.task('svg', function () {
 
 // Compile sass files
 gulp.task('sass', function () {
-	return gulp.src(`${BLOCKS.common}/style.scss`)
+	return gulp.src(`${BLOCKS.lib}/style.scss`)
 		.pipe($.plumber({errorHandler: $.notify.onError("Error: <%= error.message %>")}))
 		.pipe($.sourcemaps.init())
 		.pipe($.sass({

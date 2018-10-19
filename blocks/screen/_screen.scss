@@ -15,7 +15,7 @@
 	height: 100%;
 	background: url('../blocks/screen/screen.png') repeat;
 	&.is-hidden {
-		display: none;
+		// display: none;
 	}
 	&::before,
 	&::after {
